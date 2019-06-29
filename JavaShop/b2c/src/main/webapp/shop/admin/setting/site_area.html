@@ -1,0 +1,101 @@
+<#include '/admin/sonheader.html' >
+<div class="main" style="background: white;">
+	<div style="width: 100%" id="areas">
+		<ul style="list-style:none;">
+			<#list regionList as sl>
+			<li>
+				<div>
+					<input type="checkbox" name="province_id_${sl.region_id}"
+						class="province" value="${sl.region_id}">${sl.local_name}
+					<br>
+					<div>
+						<#list sl.children as al> 
+						<input type="checkbox" name="area_id_${al.p_region_id}" class="area"
+							p_region_id="${al.p_region_id}" local_name="${al.local_name}" value="${al.region_id}">
+							${al.local_name} 
+							
+							<div class="regions" style="display: none;">
+								<#list al.children as rl> 
+								<input type="checkbox" name="" p_region_id="${rl.p_region_id}" class="region" value="${rl.region_id}" >--${rl.local_name}
+								</#list>
+							</div>
+						</#list>
+					</div>
+				</div>
+			</li> 
+			</#list>
+		</ul>
+		<div class="layui-layer-btn layui-layer-btn-" style="padding:8px 12px;z-index:1000;" > 
+  			<a class="layui-layer-btn0" type="submit" lay-submit="" lay-filter="save_adv">保存</a>
+  		</div>
+	</div>
+</div>
+
+<script>
+$(function() {
+	var c_areaids = null;
+	if(parent.checkout_areaids!=null){
+		c_areaids = parent.checkout_areaids.split(",");
+	}
+	
+	$(".area").each(function() {
+		if(c_areaids!=null){
+			//编辑地区时，把当前已经选择的地区,置为已选择
+			for ( var i = 0; i < c_areaids.length; i++) {
+				if (c_areaids[i] == $(this).val()) {
+					$(this).attr("checked", true);
+					$(this).next(".regions").find(".region").each(function(){
+						$(this).attr("checked", true);
+					})
+				}
+			}
+		}
+	});
+
+	$(".province").click(function(){
+		var $this = $(this);
+		$(this).parent().find(".area").each(function(){
+			if ($this.attr("checked") == "checked") {
+				if ($(this).attr("p_region_id") == $this.val()) {
+					$(this).attr("checked", true);
+					$(this).next(".regions").find(".region").each(function(){
+						$(this).attr("checked", true);
+					})
+				}
+			} else {
+				$(this).attr("checked", false);
+				$(this).next(".regions").find(".region").each(function(){
+					$(this).attr("checked", false);
+				})
+			}
+		});
+	});
+	
+	
+	$(".area").click(function(){
+		var $this = $(this);
+		$(this).next(".regions").find(".region").each(function(){
+			if ($this.attr("checked") == "checked") {
+				if ($(this).attr("p_region_id") == $this.val()) {
+					$(this).attr("checked", true);
+				}
+			} else {
+				$(this).attr("checked", false);
+			}
+		});
+	})
+	
+	layui.use(['form', 'layedit', 'laydate'], function(){
+	    var form = layui.form()
+	        ,layer = layui.layer
+	        ,layedit = layui.layedit
+	        ,laydate = layui.laydate;
+	    
+	    $(".layui-layer-btn1").click(function(){
+	    	parent.layer.close(index);
+	    });
+	    
+	});
+})
+
+</script>

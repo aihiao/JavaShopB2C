@@ -1,0 +1,173 @@
+<#include '/admin/header.html' >
+<#assign imageuploader="com.enation.framework.directive.ImageUploaderDirectiveModel"?new()>
+<style>
+  .layui-form-select{
+    width:50%;
+  }
+   .layui-select-title input{
+    width:100%;
+  }
+  .layui-form-pane .layui-form-label{
+    width:200px;
+    margin-left:20px;
+  }
+   .layui-form-pane .layui-input-block{float:left; margin:0 0 0 10px;width:60%;}
+</style>
+<script type="text/javascript">
+ 		//富文本编辑器
+    var ue = UE.getEditor('editor');
+    var showImgs = [];
+    var actualImgs = [];
+    <#if pay_img?? >
+    	showImgs.push("${pay_img}");
+    	actualImgs.push("${pay_img}");
+    </#if>
+      //上传图片插件配置
+    	var image_uploader_setting = {
+    		imageName : "payImg",	// 表单提交时 的name
+    		subFolder : "payment",		// 上传目录
+    		showImgs : showImgs,	//显示的img值数组，不提交。只做显示用
+    		actualImgs : actualImgs,	// 实际的img值数组，会提交
+    		fileNumLimit:1 //最多上传图片个数
+    	}
+</script>
+<div class="admin-main">
+    <!--表单区域  -->
+	<form id="editpayCfgForm" class="layui-form layui-form-pane" action="" enctype="multipart/form-data" style="padding-top:10px;padding-bottom:10px;">
+	<input type="hidden" name="paymentId" value="${paymentId }" />
+		<div class="layui-form-item" id="first">
+			<label class="layui-form-label _stration">支付方式：</label>
+    		<div class="layui-input-block">
+      			<select name="type" id="pluginList" lay-verify="" lay-filter="plugin" style="width: 250px;">
+					<option value="">请选择要添加的支付方式</option> 
+							<#list pluginList as plugin>
+								<option value="${plugin.id }"
+								<#if type==plugin.id > selected="selected" </#if> >${plugin.name }</option>
+							</#list>
+				</select>
+   			</div>
+  		</div>
+  		
+  		<div class="layui-form-item" id="name">
+    		<label class="layui-form-label">支付方式名称：</label>
+    		<div class="layui-input-block">
+      			<input type="text" id="payment_name" name="name" value="${name}" maxlength="20"  lay-verify="" lay-verify="required" autocomplete="off" class="layui-input" >
+    		</div>
+  		</div>
+  		
+  		
+  		<div class="layui-form-item" id="online">
+    		<label class="layui-form-label">是否属于网上支付</label>
+    		<div class="layui-input-block">
+      			<input type="radio" name="isOnline" value="1" title="是" <#if is_online==1>checked </#if>>
+      			<input type="radio" name="isOnline" value="0" title="否" <#if is_online==0>checked </#if>>
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item" id="online">
+	    		<label class="layui-form-label" >是否支持原支付方式退款</label>
+	    		<div class="layui-input-block">
+	      			<input type="radio" name="isRetrace" value="1" title="是" <#if is_retrace==1>checked </#if>>
+	      			<input type="radio" name="isRetrace" value="0" title="否" <#if is_retrace==0>checked </#if>>
+	    		</div>
+	  		</div>
+  		
+  		<div class="layui-form-item" id="img">
+    		<label class="layui-form-label">支付方式展示图片</label>
+    		<div class="layui-input-block">
+      			<@imageuploader />
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item" id="last">
+    		<label class="layui-form-label">介绍：</label>
+    		<div class="layui-input-block">
+      			<script id="editor" name="biref" type="text/plain" style="height:200px;width: 99%;">${biref!''}</script>
+    		</div>
+  		</div>
+	
+  		<div class="layui-form-item" id="button">
+    		<div class="layui-input-block padding-bottom" align=center  >
+      			<a class="layui-btn" href="javascript:void(0)" lay-submit="" lay-filter="editPay">立即提交</a>
+      			<button type="reset" class="layui-btn layui-btn-primary">重置</button>
+   			</div>
+  		</div>
+  	</form>
+</div>
+<script type="text/javascript">	
+var index = parent.layer.getFrameIndex(window.name);
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+  //监听下拉框
+    form.on('select(plugin)', function(data){
+  	  var name = $("#pluginList option:selected").text();
+  	  loadHtml("", data.value, name);
+  	});
+    
+    //监听提交
+    form.on('submit(editPay)', function(){
+     	var options = {
+				url : "${ctx}/shop/admin/payCfg/save-edit.do",
+				type : "POST",
+				dataType : "json",
+				success : function(result) {
+					if(result.result==1){
+						parent.$.Loading.success(result.message); 				
+					}else{
+						parent.$.Loading.error(result.message);
+					}
+			 	},
+				 error : function(e) {
+					 parent.$.Loading.error("出现错误 ，请重试");	
+				}
+		 	};
+		$("#editpayCfgForm").ajaxSubmit(options);
+		
+		return false; 
+    });
+});   
+
+
+$(function(){
+	loadHtml('${paymentId}','${type}','${name}');
+});
+
+
+function loadHtml(paymentid, pluginid, name) {
+	if (pluginid && pluginid != '') {
+		$.ajax({
+			url : "${ctx}/shop/admin/payCfg/get-plugin-html.do?pluginId=" + pluginid
+					+ "&paymentId=" + paymentid,
+			success : function(html) {
+				cleanTr();
+				$("div[id=name]").after(html);
+				$("#payment_name").val(name);
+				layui.form().render();
+			},
+			error : function() {
+				alert("出错了");	
+			}
+		});
+	}
+}
+
+function cleanTr() {
+	$("#editpayCfgForm>div").each(function(){
+		var value = $(this).attr("id");
+		if (value != "first"
+				&& value != "last"
+				&& value != "name" 
+				&& value != "img"
+				&& value != "first"
+				&& value != "button"
+				&& value != "online"){
+			$(this).remove();
+		}
+	});
+}
+
+</script>
+<#include '/admin/footer.html' >

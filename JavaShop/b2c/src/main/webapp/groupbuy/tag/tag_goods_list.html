@@ -1,0 +1,144 @@
+<#include '/admin/header.html' > 
+<#assign dateFormat="com.enation.framework.directive.DateformateDirective"?new()>
+<style>
+.receiptsInputText{
+    width: 35px;
+    height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+ 	text-align:center;
+}
+</style>
+<div class="admin-main">
+<div class="table_control">
+	<div class="buttonArea">
+		<div class="table_opera">
+		 	<button type="button" id="addtag" title="添加" class="layui-btn layui-btn-primary " onclick="newTab('添加标签','${ctx}/shop/admin/group-buy-act-tag/search.do?tagid=${tagid}&actid=${actid}')"><i class="icon iconfont icon-llalbumshopselectorcreate"></i></button>
+		 	<button type="button" title="保存排序" class="layui-btn layui-btn-primary " id="saveOrdernum" onclick="saveOrdernum()"><i class="icon iconfont icon-xuanze"></i></button>
+		</div>
+	</div>
+</div>
+<div class="clear height10"></div>
+	<div class="shadowBoxWhite tableDiv">
+		<input type="hidden" name="tagid" value="${tagid }" id="tagid"/>
+		<input type="hidden" name="catid" value="${catid!''}" id="catid"/>
+		<form id="goodsShowform">
+			<!--表格区域  -->	 
+			<table class="layui-table site-table table-hover" id="goodsShowData" width="100%" lay-skin="line" >
+				<thead>
+					<tr>
+						<th>商品名称</th>
+						<th>排序</th>
+						<th>操作</th>
+					</tr>
+				</thead>
+			</table>
+		</form>
+		<div id="SMTPinfo" style="display: none;"></div>
+	</div>
+</div>
+
+<script type="text/javascript">
+var table;
+$(function(){
+	table = $('#goodsShowData').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/goods-show/list-json.do?ajax=yes&tagid=${tagid}',
+	    },
+	    columns: [ //定义列	   
+	        {data: null,"render":function(data, type, row) {
+	        	return formatGoodsName(data,row,type);		
+	       	}},
+	       	{data: null,"render":function(data, type, row) {
+	       		
+	        	return formatOrdernum(data,row,type);		
+	       	}},
+	       	{data: null,"render":function(data, type, row) {
+	        	return formatDelete(data,row,type);		
+	       	}}	        
+	     ]
+	});
+});
+
+function formatGoodsName(value,row,index){
+	var val="<a href=\"../../../goods-"+row.goods_id+".html\" target=\"_blank\">"+row.name+"</a><input type=\"hidden\" value=\""+row.goods_id+"\" name=\"goods_id\"/>";
+	return val;
+}
+function formatOrdernum(value,row,index){
+	var val="<input type=\"text\" maxlength=\"10\" class=\"input_text receiptsInputText\" value=\"";
+	if(row.ordernum==null){ val+=0;}else{val+=row.ordernum;}
+	val+="\" name=\"ordernum\"/>"
+	val+="<input type=\"hidden\" name=\"id\" value=\""+row.goods_id+"\" />"
+	val+="<input type=\"hidden\" name=\"tagids\"  value=\""+row.tag_id+"\"/>";
+	return val;
+}
+function formatDelete(value,row,index){
+	var val="<a class='layui-btn layui-btn-small delete' title='删除' href='javascript:void(0);' onclick='del("+row.goods_id+","+row.tag_id+")'>删除</a>";
+	return val;
+}
+function del(goods_id,tag_id){
+	if(confirm("确定删除标签？")){
+	var options = {
+			url :"${ctx}/shop/admin/goods-show/delete.do?tagid="+tag_id+"&goodsid="+goods_id,
+			type : "POST",
+			dataType : 'json',
+			success : function(result) {
+				if(result.result==1){
+					$.Loading.success(result.message);
+					table.ajax.url("${ctx}/shop/admin/goods-show/list-json.do?ajax=yes&tagid=${tagid}").load();
+				}else{
+					$.Loading.error(result.message);				
+				}
+			},
+			error : function(e) {
+				layer.msg("出现错误 ，请重试");
+			}
+		};
+		$('#goodsShowform').ajaxSubmit(options);	
+	} 
+	
+}
+function saveOrdernum(){
+	if(confirm("确定保存排序？")){
+		var is_num=true;
+		var classBlack = document.getElementsByClassName('input_text');
+		for (var i=0; i<classBlack.length; i++) {
+		   if(isNaN(classBlack[i].value)){
+			   is_num=false;
+		   }
+		}
+		if(is_num){
+		var options = {
+				url : "${ctx}/shop/admin/goods-show/save-ordernum.do?ajax=yes",
+				type : "POST",
+				dataType : 'json',
+				success : function(result) {
+					if(result.result==1){
+						$.Loading.success(result.message);
+						table.ajax.url("${ctx}/shop/admin/goods-show/list-json.do?ajax=yes&tagid=${tagid}").load();
+					}else{
+						$.Loading.error(result.message);				
+					}
+				},
+				error : function(e) {
+					layer.msg("出现错误 ，请重试");
+				}
+			};
+			$('#goodsShowform').ajaxSubmit(options);	
+		}else{
+			layer.msg("您输入的排序不是数字,并且不能为空");
+		} 
+	}
+}
+</script>
+<#include '/admin/footer.html' >

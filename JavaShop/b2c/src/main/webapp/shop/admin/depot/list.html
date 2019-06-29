@@ -1,0 +1,147 @@
+<#include '/admin/header.html' >
+<div class="admin-main">
+	<div>
+		<!--提示区域  -->
+		<div class="page_explain">
+		 <h2>操作提示</h2>
+            <ul>
+                <li><span>.</span>自营店可设定多个仓库，但是默认发货仓库只能是一个。</li>
+                <li><span>.</span>设置多个仓库，相应的每个商品在每个仓库中都可以有库存，这样可以随时的了解和掌控货物的实际库存量，以备对库存进行调整</li>
+                <li><span>.</span>设置每个商品的库存，请在商品-商品管理-进货/库存维护中设置。</li>
+            </ul>
+		</div>
+		<!--按钮操作  -->
+		<div class="table_control">
+			<div class="table_opera">
+				<button type="button" class="layui-btn layui-btn-primary "
+					title="添加" id="add_dept_button">
+					<i class="icon iconfont icon-llalbumshopselectorcreate"></i>
+				</button>
+				<button type="button" class="layui-btn layui-btn-primary "
+					title="提示" id="explain">
+					<i class="icon iconfont icon-tishi1"></i>
+				</button>
+			</div>
+
+		</div>
+	</div>
+
+	<!--表格区域  -->
+	<form id="depotForm">
+		<table id="depotdata" class="layui-table site-table table-hover"
+			width="100%" lay-skin="line">
+			<thead>
+				<tr>
+					<th>仓库名称</th>
+					<th>是否为默认发货仓库</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+		</table>
+		<!--传值等操作  -->
+		<div id="addBrand"></div>
+	</form>
+</div>
+
+<!--js区域  -->
+<script>
+	var table;
+	$(function() {
+
+		table = $('#depotdata')
+				.DataTable(
+						{
+							"language" : {
+								"url" : "${staticserver}/media/zh_CN.txt"
+							},
+							"processing" : true,
+							"serverSide" : true,
+							"ordering" : false,
+							"searching" : false,
+							"lengthChange" : false,
+							ajax : {
+								//指定数据源
+								type : "post",
+								url : '${ctx}/shop/admin/depot/list-json.do',
+							},
+							columns : [ //定义列
+									{
+										data : "name"
+									},
+									{
+										"data" : function(obj) {
+											if (obj.choose == 0) {
+												return '否';
+											}
+											if (obj.choose == 1) {
+												return '是';
+											}
+										}
+									},
+									{
+										data : null,
+										"render" : function(data, type, row) {
+											return "<a class='layui-btn layui-btn-small layui-btn-normal' onclick='editDepot("
+													+ data["id"]
+													+ ")' >修改</a>"
+													+ "&nbsp"
+													+ "<a class='layui-btn layui-btn-small layui-btn-danger' onclick='del("
+													+ data["id"] + ")'>删除</a>"; //获取值:data["brand_id"]
+										}
+									} ]
+						});
+
+		$("#add_dept_button").click(function() {
+			layer.open({
+				title : "添加仓库",//标题
+				maxmin : true,//右上角可否放大缩小
+				type : 2,//弹框的类型
+				shade : [ 0.3, '#000' ],//黑色背景
+				shadeClose : false,//黑色背景是否可以点击关闭
+				content : "${ctx}/shop/admin/depot/add.do",//内容的URL
+				area : [ '550px', '300px' ],//弹框大小
+				scrollbar : false
+			//是否允许浏览器出现滚动条
+			});
+		});
+	});
+
+	//修改
+	function editDepot(id) {
+		layer.open({
+			title : "修改仓库",//标题
+			maxmin : true,//右上角可否放大缩小
+			type : 2,//弹框的类型
+			shade : [ 0.3, '#000' ],//黑色背景
+			shadeClose : false,//黑色背景是否可以点击关闭
+			content : ctx + "/shop/admin/depot/edit.do?id=" + id,//内容的URL
+			area : [ '550px', '300px' ],//弹框大小
+			scrollbar : false
+		//是否允许浏览器出现滚动条
+		});
+	}
+
+	//删除
+	function del(depotId) {
+		if (!confirm("确认要删除仓库吗？")) {
+			return;
+		}
+		var options = {
+			url : ctx + "/shop/admin/depot/delete.do?id=" + depotId,
+			type : "POST",
+			dataType : 'json',
+			success : function(result) {
+				if (result.result == 1) {
+					$.Loading.success(result.message);
+					table.ajax.url(ctx + "/shop/admin/depot/list-json.do")
+							.load();
+				}
+				if (result.result == 0) {
+					$.Loading.error(result.message);
+				}
+			}
+		};
+		$("#depotForm").ajaxSubmit(options);
+	}
+</script>
+<#include '/admin/footer.html' >

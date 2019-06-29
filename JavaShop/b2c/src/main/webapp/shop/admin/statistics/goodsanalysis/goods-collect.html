@@ -1,0 +1,132 @@
+<#include '/admin/header.html' >
+
+<div class="admin-main">
+	<div id="main" style="height: 300px;"></div>
+	
+	<div class="clear height10"></div>
+	<div class="shadowBoxWhite tableDiv">
+		<table id="data" class="layui-table site-table table-hover">
+			<thead>
+				<tr>
+					<th>商品名称</th>
+					<th>商品价格</th>
+					<th>收藏量</th>
+				</tr>
+			</thead>
+		</table>
+	</div>
+		
+</div>
+
+
+<script>
+
+var collect_data = ${collectJosn};
+
+$(function(){
+	
+	var table = $('#data').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/goodsStatis/get-collect-json.do',
+	    },
+	    columns: [ //定义列    
+	        {data: "name"},
+	        {data: "price"},
+	        {data: "y"} 
+	     ]
+	});
+});
+
+var myChart = echarts.init(document.getElementById('main'));
+var option = {
+		
+		title: {
+        	x: 'center',
+            text: '收藏商品排行Top50'
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: function(params){
+            	var dataname = collect_data[params.dataIndex].name;
+            	return dataname + '<br/>' + params.seriesName + ' : ' +params.value +'次';
+            }
+        },
+        legend: {
+        	bottom : 20,
+            data:['收藏数']
+        },
+        toolbox: {
+	        show : true,
+	        feature : {
+	            mark : {show: true},
+	            magicType : {show: true, type: ['line', 'bar']},
+	            restore : {show: true},
+	            saveAsImage : {show: true}
+	        }
+	    },
+        grid: {  
+            top: 80,  
+            right:100,  
+            bottom:70  
+        }, 
+        xAxis:{
+        	type: 'category',
+            axisTick: {
+                alignWithLabel: true
+            },
+            data: function (){
+                var list = [];
+                	for (var i = 1;i<=collect_data.length; i++) {
+                        list.push(i);
+                    }
+                	return list;
+            }()
+        },
+        yAxis: {
+            type: 'value',
+            name: '收藏数',
+            position: 'left',
+            axisLabel: {
+                formatter: '{value} 次'
+            }
+        },
+    	series: [{
+	        name: ['收藏数'],
+	        type: 'bar',
+	        data: function (){
+	            var list = [];
+	            	for(var i=0;i<collect_data.length;i++){
+	            		list.push(collect_data[i].y);
+	            		}
+	            	return list;
+	        }(),
+	        itemStyle: {
+	            normal: {
+	                color:'#7cb5ec',
+	                label: {
+	                    show: true,
+	                    position: 'top',
+	                    formatter: '{c}'
+	                }
+	            }
+	        },
+    	}]
+};
+/** 使用刚指定的配置项和数据显示图表。*/
+myChart.setOption(option);
+
+
+</script>
+
+
+<#include '/admin/footer.html' >

@@ -1,0 +1,157 @@
+<#include '/admin/header.html' >
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+            <h2>操作提示</h2>
+            <ul>
+                <li><span>·</span>列表中显示是前台客户对商品的疑问和咨询。</li>
+                <li><span>·</span>可以对其进行回复，但是需要审核通过，前台才会显示咨询以及回复内容。</li>
+                <li><span>·</span>审核拒绝的话，前台不会显示出咨询内容。</li>
+                <li><span>·</span>如果审核通过，前台也显示其内容，但是把列表中的咨询记录删除掉的话，前台显示依然会消失。</li>
+            </ul>
+        </div>
+        <!--按钮操作  -->
+        <div class="table_control">
+            <div class="table_opera">
+                <button type="button" class="layui-btn layui-btn-primary " title="删除" onclick="delgmComments();"><i class="icon iconfont icon-guanbi1"></i></button>
+                <button type="button" class="layui-btn layui-btn-primary " title="说明" id="explain"><i class="icon iconfont icon-tishi1"></i></button>
+            </div>
+        </div>
+    </div>
+    
+   <!--表格区域  -->
+   <form id="comments_gmform">
+     <table id="comments_gmdata" class="layui-table site-table table-hover">
+        <thead>
+          <tr>
+            <th><input type='checkbox'  class='btn-checkall fly-checkbox' id='selected-all'></th>
+            <th>商品名称</th>
+            <th>咨询人</th>
+            <th>咨询日期</th>
+            <th>显示状态</th>
+            <#if product_type=="b2c">
+				<th>操作</th>
+			<#else>
+				<th>操作</th>
+			</#if>
+          </tr>
+        </thead>
+     </table>
+     <!--传值等操作(暂定)  -->
+    <div id="addBrand" ></div>
+   </form>
+</div>
+
+<!--js区域  -->
+<script>
+var table;
+$(function(){
+	
+	 table = $('#comments_gmdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/comments/list-json.do?type=2',
+	    },
+	    columns: [ //定义列
+            {"data": function (obj) {
+                return '<input type="checkbox" name="comment_id" class="fly-checkbox" value=' + obj.comment_id + '>';
+            		}},
+	        {data: "gname"},
+	        {data: "muname"},
+	        {data: null,"render":function(data,type,row){
+	        	return getFormatDateByLong(data.dateline, "yyyy-MM-dd hh:mm:ss");
+	        }},
+	        {data: null,"render":function(data,type,row){
+	        	var val;
+	    		if (data.status == 0) {
+	    			val = "未审核";
+	    		}
+	    		if (data.status == 1) {
+	    			val = "审核通过";
+	    		}
+	    		if (data.status == 2) {
+	    			val = "审核拒绝";
+	    		}
+	    		return val;
+	        }},
+	        <#if product_type=="b2c">
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small _aa' name='change_btn' onclick='details("+data["comment_id"]+")'>操作</a>";		//获取值:data["brand_id"]
+	       	}}
+			<#else>
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small _aa' name='change_btn' onclick='lookDetails("+ row.comment_id + ")'>查看</a>";		//获取值:data["brand_id"]
+	       	}}
+			</#if>
+	     ]
+	});
+});
+
+
+//资讯审核
+function details(commentID){
+	layer.open({
+        title:"咨询审核",//标题
+        maxmin :true,//右上角可否放大缩小
+        type:2,//弹框的类型
+        shade: [0.3, '#000'],//黑色背景
+        shadeClose:false,//黑色背景是否可以点击关闭
+        content:ctx+"/shop/admin/comments/detail.do?commentId="+commentID,//内容的URL
+        area:['600px','500px'],//弹框大小
+        scrollbar: false,//是否允许浏览器出现滚动条
+    });
+}
+
+//查看资讯
+function lookDetails(commentID){
+	layer.open({
+        title:"查看",//标题
+        maxmin :true,//右上角可否放大缩小
+        type:2,//弹框的类型
+        shade: [0.3, '#000'],//黑色背景
+        shadeClose:false,//黑色背景是否可以点击关闭
+        content:ctx+"/shop/admin/comments/look-detail.do?commentId="+commentID,//内容的URL
+        area:['600px','300px'],//弹框大小
+        scrollbar: false,//是否允许浏览器出现滚动条
+    });
+}
+
+
+//删除
+function delgmComments(){
+	var check = $("input[name='comment_id']").is("input:checked");
+	if(check==false){
+		alert("请选择要删除的咨询！！！");
+		return false;
+	}
+	if(!confirm("确定要删除这些咨询？")){
+		return;
+	}
+	var options = {
+			url:ctx+"/shop/admin/comments/delete.do",
+			type:"post",
+			dataType:"json",
+			success:function(data){
+				if(data.result==1){
+					$.Loading.success("删除成功！")
+					table.ajax.url(ctx+"/shop/admin/comments/list-json.do?type=2").load();
+				}
+				if(data.result==0){
+					$.Loading.error("删除失败！")
+				}
+			}
+	};
+	$("#comments_gmform").ajaxSubmit(options);
+}
+</script>
+<#include '/admin/footer.html' >

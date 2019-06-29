@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="团购组件"  version="1.0" javashop_version="3.0.0" author="javashop">
+ 
+	<plugins>
+		<plugin name="团购活动插件" id="groupBuyActPlugin">
+	 		<bundle id="jobExecutePluginsBundle"></bundle>
+	 	</plugin>
+	 	<plugin name="团购商品插件" id="groupBuyGoodsPlugin">
+	 		<bundle id="orderPluginBundle"></bundle>
+	 		<bundle id="goodsPluginBundle"></bundle>
+	 		<bundle id="groupbuyPluginBundle"></bundle>
+	 	</plugin>
+	 	<plugin name="团购活动标签插件" id="groupBuyActTagPlugin">
+	 		<bundle id="groupbuyPluginBundle"></bundle>
+	 	</plugin>
+	 	<plugin name="团购购物车插件" id="groupGoodsCartPlugin">
+	 		<bundle id="cartPluginBundle"></bundle>
+	 	</plugin>
+	</plugins>
+</component>

@@ -1,0 +1,53 @@
+<#include '/admin/header.html' >
+<#assign dateFormat="com.enation.framework.directive.DateformateDirective"?new()>
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+            <h2>操作提示</h2>
+            <ul>
+                <li><span>·</span>标签商品设置，设置商品的标签</li>
+            </ul>
+        </div>
+   <!--表格区域  -->
+   <form id="tagform">
+    <table id="tag" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+        <thead>
+          <tr>
+            <th>标签</th>
+            <th>商品设置</th>
+          </tr>
+        </thead>
+    </table>
+   </form>
+</div>
+<script type="text/javascript">
+var table;
+$(function(){
+	 table = $('#tag').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/group-buy-tag/list-json.do',
+	    },
+	    columns: [ //定义列
+	        {data: "tag_name"},
+	        {data: null,"render": function(data, type, row) {
+	        	if(data.is_groupbuy !=null){
+	        		return "<a class='layui-btn layui-btn-small layui-btn-danger' id='editArea' onclick=\"newTab('设置','${ctx}/shop/admin/group-buy-act-tag/list.do?tagid="+data.tag_id+"&actid="+data.is_groupbuy+"')\">设置</a>";	
+	        	}else{
+	        		return "<a class='layui-btn layui-btn-small layui-btn-danger' id='editArea' onclick=\"newTab('设置','${ctx}/shop/admin/goods-show/list.do?tagid="+data.tag_id+"')\">设置</a>";	
+	        	}	
+	       	}}
+	     ]
+	});
+});
+</script>

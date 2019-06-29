@@ -1,0 +1,163 @@
+<#include '/admin/header.html' >
+<style type="text/css">
+
+.receiptsInputText{
+    width: 35px;
+    height: 20px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+   	text-align:center;
+   	
+}
+
+</style>
+<div class="admin-main">
+    <div>
+        <!-- 提示区 -->
+        <div class="page_explain">
+            <ul>
+                <li>1</li>
+                <li>2</li>
+                <li>3</li>
+            </ul>
+        </div>
+        <!-- 按钮区 -->
+        <div class="table_control">
+            <div class="table_opera">
+
+                <button type="button" id="save_sort_button"  title="保存排序" class="layui-btn layui-btn-primary layui-btn-small" onclick="updateSort()"><i class="layui-icon">&#xe618;</i></button>
+            </div>
+        </div>
+    </div>
+    <!-- 表格区 -->
+    <form action="" id="floorform">
+		<table id="pcfloordata" class="layui-table site-table table-hover">
+        	<thead>
+        	<tr>
+            <th>ID</th>
+            <th>名称</th>
+         	<th>排序</th>
+            <th>删除</th>
+        	</tr>
+        	</thead>
+   		 </table>
+    </form>
+</div>
+
+<!-- js操作区域 -->
+<script>
+var table;
+$(function(){
+	
+	table = $('#pcfloordata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        dataType : 'json',
+	        url: ctx+'/core/admin/floor/get-list-by-parentid-json.do?parentid=${floorid!'0'}&pageid='+pageid,
+	    },
+	    columns: [ //定义列
+	        {data: null,"render": function(obj) {
+	  	    	 return '<input type="hidden" name="floor_ids" value="'+obj.id+'" ><span>'+obj.id+'</span>';		
+	  	    }},     
+	        {data: "title"},
+	        {data: null,"render": function(obj) {
+ 	        	return '<input type="text" name="floor_sorts"  class="receiptsInputText" value="'+obj.sort+'" id="sorts">';		
+ 	       	}},
+
+	       	{data: null,"render": function(obj) {
+	        	return "<a class='layui-btn layui-btn-small layui-btn-danger' onclick='del("+obj.id+")' >删除</a>";		
+	       	}}
+	     ]
+	});
+});
+
+var ctx="${ctx}";
+var pageid=${pageid};
+
+function updateSort(){
+	var result = true;
+	var msg = "";
+	var z = /^[0-9]*$/;
+	
+	$("input[name='floor_sorts']").each(function(){
+		var val = $(this).val();
+		if ($.trim(val) == "") {
+			result = false;
+			msg = "排序值不能为空";
+			return false;
+		}
+		
+		if(!z.test(val)){
+			result = false;
+			msg = "排序值只允许输入数字";
+			return false;
+		};
+		
+	});
+	
+	if (!result) {
+		alert(msg);
+		return false;
+	}
+	
+	var options = {
+			url :ctx+"/core/admin/floor/save-sort.do",
+			type : "POST",
+			dataType : 'json',
+			success : function(result) {				
+			 	if(result.result==1){
+			 		$.Loading.success(result.message);
+			 		location.reload();
+			 	}else{
+			 		alert(result.message);
+			 	}
+			},
+			error : function(e) {
+				$.Loading.hide();
+				alert("出错啦:(");
+				}
+		};
+
+	$("#floorform").ajaxSubmit(options);
+}
+
+/**
+ * 删除楼层
+ * @param id 楼层id
+ * @returns
+ */
+function del(id) {
+    if (!confirm("删除楼层会删除楼层所有数据,确定删除吗？")) {
+        return;
+    }
+    $.Loading.show("正在删除......");
+    $.ajax({
+        url : ctx+"/core/admin/floor/delete.do?floor_id=" + id,
+        type : "POST",
+        dataType : 'json',
+        success : function(result) {
+            if (result.result == 1) {
+                $.Loading.success(result.message);
+                parent.refreshCurrent();
+            }
+            if (result.result == 0) {
+                $.Loading.error(result.message);
+            }
+        },
+        error : function(e) {
+            $.Loading.error("出现错误 ，请重试");
+        }
+    });
+}
+
+</script>
+<#include '/admin/footer.html' >

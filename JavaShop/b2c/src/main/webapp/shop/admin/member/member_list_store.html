@@ -1,0 +1,317 @@
+<#include '/admin/header.html' >
+<#assign regionSelectDirective="com.enation.app.shop.front.tag.goods.other.regions.RegionSelectDirective"?new()>
+<style type="text/css">
+	.table_search button{
+		margin-top: 0px!important;
+	}
+	td input{
+	 height: 25px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+	}
+	tr{
+	height:50px;
+	}
+	select{
+	height:25px;
+	border-radius:3px;
+	}
+	th{
+	    width: 195px;
+         font-size: 12px;
+        text-align: center;
+	}
+
+</style>
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+           
+        </div>
+        <!--按钮操作  -->
+        <div class="table_control">
+        	<input type="hidden" id="catid" value="">
+	            <div class="table_opera">
+	                <button type="button" id="catid" class="layui-btn layui-btn-primary " title="添加" onclick="newTab('会员添加','${ctx}/shop/admin/member/add-member.do')"><i class="icon iconfont icon-llalbumshopselectorcreate"></i></button>
+	                <button type="button" class="layui-btn  layui-btn-primary" id="catid" title="选择"  onclick="selectMember()" ><i class="layui-icon" ></i></button>
+	            </div>
+          
+            <!--搜索区域  -->
+
+            <div class="table_search" style="line-height: 47px;" id="simpleSearch">
+            	 <input type="text" id="searchKeyword" class="keysearch" placeholder="请输入用户名，姓名，手机号" style="margin-top: 0px;">
+		      	 <button type="button" class="layui-btn layui-btn-primary layui-btn-small" id="data" onclick="searchMember()"><i class="layui-icon">&#xe615;</i></button>
+		     	 <button type="button" class="layui-btn layui-btn-primary layui-btn-small" id="aAdvanced"><i class="layui-icon">&#xe615;</i>高級搜索</button>
+            </div>
+        </div>
+         <div style="display: block;" class="searchAdvanced" >
+		<input id="Advanced" name="Advanced" type="hidden" value="0" />
+			<table width="98%" border="0" cellspacing="0" cellpadding="8">
+				<tr>
+					<th >用户名</th>
+					<td>
+						<input type="text" value="${name!''}" id="uname"  class="input_text">
+					</td>
+					<th >手机</th>
+					<td>
+						<input type=" text" value="${name!''}" id="mobile" maxlength="11" class="input_text easyui-numberbox">
+					</td>
+					<th width="120" align="right">会员等级</th>
+					<td>
+						<select name="member.lv_id" class="inputSelect valid" id="lv_id" >
+							<option value="0">--请选择等级--</option>
+							<#if lvlist??>
+								<#list lvlist as lv>
+									<option value="${lv.lv_id }">${lv.name }</option>
+								</#list>
+							</#if>
+						</select>
+					</td>
+					<th >电子邮件</th>
+					<td width="200px">
+						<input type="text" value="${email!''}" id="email"  class="input_text">
+					</td>
+				</tr>
+				<tr>
+					<th  >注册时间</th>
+					<td width="300px">
+						<input class="layui-input" placeholder="开始日" style="width: 90px;line-height:25px;display:inline-block;" id="start_time">
+                        <input class="layui-input" placeholder="截止日" style="width: 90px;line-height:25px;display:inline-block;" id="end_time">
+					</td>
+					<th width="70" align="right">城市</th>
+					<td width="350px">
+						<@regionSelectDirective  province_id="${province_id!''}" 
+city_id="${city_id!''}" region_id="${region_id!''}" />
+					</td>	
+					<th >性别</th>
+					<td>
+						<select id="sex" class="inputSelect valid" >
+							<option value="2">全部</option>
+							<option value="1">男</option>
+							<option value="0">女</option>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<td></td>
+					<td colspan="7" align="center">
+						<button type="button" class="layui-btn  layui-btn-normal layui-btn-small" id="bgSearch">开始搜索</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+    </div>
+    	
+   <!--表格区域  -->
+   <form id="storeform">
+    <table id="storedata" class="layui-table site-table table-hover">
+        <thead>
+          <tr> 
+            <th></th>
+          	<th>用户名</th>
+          	<th>手机</th>    
+            <th>会员等级</th>
+            <th>电子邮件</th>
+            <th>注册时间</th>
+            <th>上次登录日期</th>
+            <th>本月登录次数</th>
+            <th>城市</th>
+            <th>性别</th>
+            <th>操作</th>			
+          </tr>
+        </thead>
+
+    </table>
+    <div id="addBrand" ></div>
+   </form>
+</div>
+<script type="text/javascript">
+var table;
+$(function(){
+table = $('#storedata').DataTable({
+	"language": {
+        "url": "${staticserver}/media/zh_CN.txt"
+    },
+    "processing": true,
+    "serverSide": true,
+    "ordering": false,
+    "searching": false,
+    "lengthChange": false,
+    ajax: {
+        //指定数据源
+        type:"post",
+        url: '${ctx}/shop/admin/member/member-list-json.do?isshopkeeper=1',
+    },
+    columns: [ //定义列
+        {data: null,"render": function(obj) {
+               	
+            return "<input type='radio' name='membername' value='"+obj.uname+"' class='fly-checkbox'>";		
+        }}   ,       
+        {data: null,"render": function(obj) {
+        	
+        	return obj.uname;		
+    	}}   ,
+    	 {data: null,"render": function(obj) {
+         	
+         	return obj.mobile;		
+     	}}   ,
+     	 {data: null,"render": function(obj) {
+         	
+         	return obj.lv_name;		
+     	}}   ,
+     	 {data: null,"render": function(obj) {
+         	
+         	return obj.email;		
+     	}}   ,
+     	 {data: null,"render": function(obj) {
+         	
+     		if(obj.regtime==null){
+        		return "";
+        	}
+        	else{
+        		return getFormatDateByLong(obj.regtime, "yyyy-MM-dd");
+        	}	
+     	}}   ,
+     	 {data: null,"render": function(obj) {
+     		if(obj.lastlogin==null){
+        		return "";
+        	}
+        	else{
+        		return getFormatDateByLong(obj.lastlogin, "yyyy-MM-dd");
+        	}	 	
+     	}}   ,
+     	 {data: null,"render": function(obj) {
+         	
+         	return obj.logincount;		
+     	}}   ,
+     	 {data: null,"render": function(obj) {
+         	
+         	return obj.city;		
+     	}}   ,
+         {data: null,"render": function(obj) {
+        	 if(obj.sex=="1")
+	       			return "男";
+	       		if(obj.sex=="-1")
+	       			return "女";		
+     	}}   ,
+     	 {data: null,"render": function(obj) {
+          	
+     		var val = "<a class='edit' title='修改' href='javascript:void(0);' onclick='newTab(\""
+				+ obj.uname
+				+ "-信息修改\",\"${ctx}/shop/admin/member/detail.do?memberId="
+				+ obj.member_id + "\")' ><i class='layui-icon'>&#xe642;</i></a>";
+				return val;
+      	}}   ,
+    	 ]
+});
+
+//layui日期控件配置
+layui.use('laydate', function(){
+	  var laydate = layui.laydate;
+	  
+	  var start = {
+	    min: '2010-01-01 23:59:59',
+	    max: '2099-06-16 23:59:59',
+	    istoday: false,
+	    choose: function(datas){
+	      end.min = datas; //开始日选好后，重置结束日的最小日期
+	      end.start = datas //将结束日的初始值设定为开始日
+	    }
+	  };
+	  
+	  var end = {
+	    min: '2010-01-01 23:59:59',
+	    max: '2099-06-16 23:59:59',
+	    istoday: false,
+	    choose: function(datas){
+	      start.max = datas; //结束日选好后，重置开始日的最大日期
+	    }
+	  };
+	  
+	  document.getElementById('start_time').onclick = function(){
+	    start.elem = this;
+	    laydate(start);
+	  }
+	  document.getElementById('end_time').onclick = function(){
+	    end.elem = this
+	    laydate(end);
+	  }
+	});
+//搜索
+$("#data").click(function(){
+	searchData(table);
+});
+
+});
+
+$("#bgSearch").click(function(){
+	searchGaoData(table);
+});
+
+function searchData(table){
+	var searchtype = $("#Advanced").val();
+	var keyword = $("#searchKeyword").val();
+	var param = "&stype="+searchtype+"&keyword="+keyword;
+	var url = table.ajax.url("${ctx}/shop/admin/member/member-list-json.do?isshopkeeper=1"+param);
+	url.load();
+	}
+
+function searchGaoData(table){
+	var searchtype = $("#Advanced").val();
+	var keyword = $("#searchKeyword").val();
+	var start_time = $('#start_time').val();
+	var end_time = $('#end_time').val();
+	var uname = $("#uname").val();
+	var mobile = $("#mobile").val();
+	var lv_id = $("#lv_id").val();
+	var email = $("#email").val();
+	var sex = $("#sex").val();
+	var province_id = $("#province_id").val();
+	var city_id = $("#city_id").val();
+	var region_id = $("#region_id").val(); 
+	if (email.length != 0) {
+		var reg = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+		if (!reg.test(email)) {
+			alert("对不起，您输入的字符串类型格式不正确!");//请将“字符串类型”要换成你要验证的那个属性名称！    
+			return;
+		}
+	}
+	var param = "&stype="+searchtype+"&keyword="+keyword+"&start_time="+start_time+"&end_time="+end_time+"&uname="+uname+"&mobile="+mobile+"&lvId="+lv_id+"&email="+email
+
+	+"&sex="+sex+"&province_id="+province_id+"&city_id="+city_id+"&region_id="+region_id;
+	var url = table.ajax.url("${ctx}/shop/admin/member/member-list-json.do?isshopkeeper=1"+param);
+	url.load();
+	}
+
+function selectMember(){
+	if($("input[name='membername']:checked").val()== undefined){
+		alert("请选择一个会员");
+		return;
+	}
+	newTab("查看店铺详细","${ctx}/b2b2c/admin/store/add.do?uname="+$("input[name='membername']:checked").val());
+}
+$(function() {
+	$(".searchAdvanced").hide();
+	//高级查询按钮
+	$("#aAdvanced").click(function() {
+		if ($("#Advanced").val() == "0") {
+			$("#Advanced").val(1);
+			$("#searchKeyword").hide();
+			$("#data").hide();
+			//$("#aAdvanced").text("简单搜索")
+			$("#aAdvanced").addClass("searchAdvancedS");
+		} else {
+			$("#Advanced").val(0);
+			$("#searchKeyword").show();
+			$("#data").show();
+			//$("#aAdvanced").text("高级搜索");
+			$("#aAdvanced").removeClass("searchAdvancedS");
+		}
+		$(".searchAdvanced").slideToggle("slow");
+	});
+});
+
+	
+</script>
+<#include '/admin/footer.html' >

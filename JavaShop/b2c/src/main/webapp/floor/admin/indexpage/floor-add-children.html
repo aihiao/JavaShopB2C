@@ -1,0 +1,104 @@
+<#include '/admin/sonheader.html' >
+
+	<div class="main">
+
+		<form class="layui-form layui-form-pane" action="" id="addChildrenFoorForm" enctype="multipart/form-data">
+			<div class="layui-form-item">
+				<label class="layui-form-label">楼层标题</label>
+				<div class="layui-input-block">
+					<input type="text" name="title" maxlength="8" lay-verify="title" autocomplete="off" class="layui-input">
+				</div>
+			</div>
+			<#if pageid?exists>
+				<input name="page_id" id="page_id" type="hidden" value="${pageid}">
+				<div class="layui-form-item">
+					<label class="layui-form-label">楼层色调</label>
+					<div class="layui-input-block">
+						<input type="text" name="style" lay-verify="title" autocomplete="off" value="style1" class="layui-input" style="float:left;">
+						<div class="layui-form-mid layui-word-aux">系统默认2种风格：style1(有商品大图),style2(无商品大图)</div>
+					</div>
+				</div>
+			</#if>
+			<input name="parent_id" type="hidden" value="${floor.id}">
+
+			<div class="layui-form-item">
+				<label class="layui-form-label">显示</label>
+				<div class="layui-input-block">
+					<input type="radio" name="is_display" value="0" checked title="显示">
+					<input type="radio" name="is_display" value="1" title="不显示">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">排序</label>
+				<div class="layui-input-block">
+					<input type="text" name="sort" maxlength="5" lay-verify="number" autocomplete="off" value="1" class="layui-input">
+				</div>
+			</div>
+
+			<div class="layui-layer-btn layui-layer-btn- confirm-btn">
+				<a class="layui-layer-btn0 layui-btn" type="submit" lay-submit="" lay-filter="save" id="save">保存</a>
+				<a class="layui-layer-btn1">取消</a>
+			</div>
+		</form>
+	</div>
+<script>
+
+
+    var index = parent.layer.getFrameIndex(window.name);
+
+    layui.use(['form', 'layedit', 'laydate'], function(){
+        var form = layui.form(),
+            layedit = layui.layedit,
+            laydate = layui.laydate;
+
+        //自定义验证规则
+        form.verify({
+            title: function(value){
+                if(value.length < 2){
+                    return '标题至少得2个字符啊';
+                }
+            }
+        });
+        //关闭按钮
+        $(".layui-layer-btn1").click(function(){
+            parent.layer.close(index);
+        });
+
+        //监听提交
+        form.on('submit(save)', function(data){
+            $("#save").off("click");//点击后取消click事件
+            $("#save").attr("type","text");//点击后更改属性防止多次点击多次提交
+            $("#save").attr("lay-filter","save1");
+            var options = {
+                url:ctx+"/core/admin/floor/save-add.do",
+                type:"post",
+                dataType:"json",
+                beforeSend:function(){
+                    $("#save").addClass("layui-btn-disabled")	;
+                },
+                success:function(data){
+                    if(data.result==1){
+                        $.Loading.success(data.message);
+                        parent.layer.close(index); //再执行关闭
+                        parent.table.ajax.url(ctx+"/core/admin/floor/get-list-by-parentid-json.do?parentid=0&pageid=${pageid}").load();
+                    }else{
+                        $.Loading.error(data.message);
+                        $("#save").on("click");//点击后取消click事件
+                        $("#save").attr("type","submit");//点击后更改属性防止多次点击多次提交
+                        $("#save").attr("lay-filter","save");
+                        $("#save").removeClass("layui-btn-disabled");
+                    }
+                },
+                error : function(e) {
+                    $.Loading.error("出现错误 ，请重试");
+                    $("#save").on("click");//点击后取消click事件
+                    $("#save").attr("type","submit");//点击后更改属性防止多次点击多次提交
+                    $("#save").attr("lay-filter","save");
+                    $("#save").removeClass("layui-btn-disabled");
+                }
+            };
+            $("#addChildrenFoorForm").ajaxSubmit(options);
+            return false;
+        });
+    });
+</script>

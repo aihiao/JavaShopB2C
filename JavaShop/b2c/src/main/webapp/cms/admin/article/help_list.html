@@ -1,0 +1,195 @@
+
+<#include '/admin/header.html' >
+    <link rel="stylesheet" href="../css/list.css"/>
+    <link rel="stylesheet" href="../css/demo.css"/>
+    <link rel="stylesheet" href="../css/metroStyle/metroStyle.css"/>
+
+<div class="admin-main">
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="paperbox" style="width:20%;white-space:nowrap;">
+                <div class="paperbox-s">
+                    <span>文章分类</span>          
+                </div>
+                <!-- //插件 -->
+                <div class="node">
+                    <div class="zTreeDemoBackground left">
+                        <ul id="treeDemo" class="ztree"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+   <!-- 右侧 -->
+   <div class="row">
+         <div class="col-sm-12">
+             <div class="article" style="white-space:nowrap;"> 
+                <div class="classification">
+                 <span id=catName>
+                 文章列表
+                 </span>
+                 <span style="display:inline-block;width:50%">
+                  <a class="layui-btn  layui-btn-small" id="add-article">添加文章</a>
+                  <input type="text" name="keyword" placeholder="请输入标题" autocomplete="off" class="layui-input keyword">
+                  <input type = "hidden" name = "searchField" value = "page_title" >
+                  <button class="layui-btn-primary layui-btn layui-btn-small" style="margin-top:-2px;" id="search">
+                      <i class="layui-icon">&#xe615;</i>
+                  </button>
+                  </span>
+            </div>
+            <!-- 表格-->
+          <div class="list-form">
+           <form id="dataForm"> 
+                <table id="modeldata" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+                    <thead>
+                         <tr>
+                            <th>id</th>
+                            <th>页面标题</th>
+                            <th>排序</th>
+                            <th>添加时间</th>
+                            <th>修改</th>
+                            <th>删除</th>
+                         </tr>
+                    </thead>
+                </table>
+            </form>
+           </div>
+               
+           </div>
+        </div>
+     </div>
+</div>
+<script type="text/javascript">
+
+    var cur_cat_id=0;
+
+    var setting = {
+        view: {
+            showIcon: showIconForTree
+        },
+        async: {
+            enable: true,
+            url:"${ctx}/cms/admin/cat/list-json-help.do",
+            autoParam:["cat_id"]
+        },
+        callback: {
+            onClick: zTreeOnClick
+        }
+    };
+    
+    function filter(treeId, parentNode, childNodes) {
+        if (!childNodes) return null;
+        for (var i=0, l=childNodes.length; i<l; i++) {
+            childNodes[i].name = childNodes[i].name.replace(/\.n/g, '.');
+        }
+        return childNodes;
+    }
+
+    function showIconForTree(treeId, treeNode) {
+        return !treeNode.isParent;
+    };
+
+    //点击ztree单个节点事件
+    function zTreeOnClick(event, treeId, treeNode) {   
+    	var name = treeNode.name;
+    	$("#catName").html(name+"-文章列表");
+        loadData(treeNode.cat_id);
+        cur_cat_id = treeNode.cat_id;
+    };
+//获取表格内容的js区域
+var table;
+$(function(){
+    
+    $.fn.zTree.init($("#treeDemo"), setting);
+
+    table = $('#modeldata').DataTable({
+        "language": {
+            "url": "${staticserver}/media/zh_CN.txt"
+        },
+        "processing": true,
+        "serverSide": true,
+        "ordering": false,
+        "searching": false,
+        "lengthChange": false,
+         ajax: {
+            //指定数据源
+           type:"post",
+           url: '${ctx}/cms/admin/data/list-json.do?catid=2',
+        }, 
+        columns: [ //定义列
+               {data: null,"render": function(obj){
+            	   return '<input type="hidden" id="catid" value="'+obj.cat_id+'" ><span>'+obj.id+'</span>';	
+               }},
+               {data: "page_title"},
+               {data: "sort"},
+               {data: null,"render": function(obj) {
+                if(obj.add_time==null){
+                    return "";
+                }else{
+                    return getFormatDateByLong(obj.add_time, "yyyy-MM-dd");
+                }
+               }},
+               {data: null,"render": function(data, type, row) {
+                    return "<a class='layui-btn layui-btn-small layui-btn-normal' name='change_btn' onclick=\"newTab('修改','${ctx}/cms/admin/data/edit.do?dataid="+data["id"]+"&catid="+data["cat_id"]+"')\")>编辑</a>";
+               }},
+               {data: null,"render": function(data, type, row) {
+                    return "<a class='layui-btn layui-btn-small layui-btn-danger' name='change_btn' onclick='del("+ row.id+ ")'><img catid='"+row.id+"' src='${ctx}/cms/admin/images/transparent.gif'>删除</a>"
+               }}
+         ]
+    });
+    
+
+    //添加文章的点击事件
+    $("#add-article").click(function(){
+        if(cur_cat_id==0){
+            cur_cat_id=21;
+        }
+        newTab("添加文章","${ctx}/cms/admin/data/add.do?catid="+cur_cat_id);
+    });
+    
+    
+    //搜索按钮的点击事件
+    $("#search").click(function(){
+        if(cur_cat_id==0){
+            cur_cat_id=2;
+        }
+        loadData(cur_cat_id);
+    });  
+})
+
+//加载文章数据
+function loadData(catId){
+	
+    var keyword = $(".keyword").val();
+    var searchField = $("input[name='searchField']").val();
+    var param = "catid="+catId+"&searchText="+keyword+"&searchField="+searchField;
+    var url = table.ajax.url("${ctx}/cms/admin/data/list-json.do?"+param);
+    url.load();
+}
+//删除
+function del(id){
+	var catid = $('#catid').val();
+	
+	if(!confirm("确认要删除吗？")){	
+		return ;
+	}
+	var options = {
+			url : "${ctx}/cms/admin/data/delete.do?ajax=yes&dataid="+id+"&catid="+catid,
+			type : "POST",
+			dataType : 'json',
+			success : function(result) {
+				if(result.result==1){
+				    $.Loading.success(result.message);
+					table.ajax.url(ctx+"/cms/admin/data/list-json.do?catid="+catid).load();
+				}
+				if(result.result==0){
+					$.Loading.error(result.message);
+				}
+			}
+	};
+	$('#dataForm').ajaxSubmit(options);	
+}
+
+</script>
+
+<#include '/admin/footer.html' >

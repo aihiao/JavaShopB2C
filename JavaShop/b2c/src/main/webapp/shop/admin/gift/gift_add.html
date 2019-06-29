@@ -1,0 +1,128 @@
+<#include '/admin/sonheader.html' >
+<style>
+.layui-input {
+	width: 75%;
+}
+</style>
+<#assign
+imageuploader="com.enation.framework.directive.ImageUploaderDirectiveModel"?new()>
+<script type="text/javascript">
+//上传图片插件配置
+var image_uploader_setting = {
+	imageName : "gift_img",	// 表单提交时 的name
+	subFolder : "/gift",		// 上传目录
+	showImgs : [],	//显示的img值数组，不提交。只做显示用
+	actualImgs : [],	// 实际的img值数组，会提交
+	fileNumLimit : 1
+}
+</script>
+<div class="main">
+	<!--表单区域  -->
+	<form id="giftAddForm" class="layui-form layui-form-pane" action=""
+		enctype="multipart/form-data">
+		<div class="layui-form-item">
+			<label class="layui-form-label">赠品名称：</label>
+			<div class="layui-input-block">
+				<input type="text" name="gift_name" maxlength="20"
+					lay-verify="gift_name" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">赠品价格：</label>
+			<div class="layui-input-block">
+				<input type="text" name="gift_price" maxlength="9"
+					lay-verify="gift_price" autocomplete="off"
+					onkeyup="this.value=this.value.replace(/\D/g,'')"
+					onafterpaste="this.value=this.value.replace(/\D/g,'')"
+					class="layui-input">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">赠品库存：</label>
+			<div class="layui-input-block">
+				<input type="text" name="actual_store" maxlength="9"
+					lay-verify="actual_store" autocomplete="off"
+					onkeyup="this.value=this.value.replace(/\D/g,'')"
+					onafterpaste="this.value=this.value.replace(/\D/g,'')"
+					class="layui-input">
+			</div>
+		</div>
+
+		<div class="layui-form-item">
+			<label class="layui-form-label">赠品图片：</label>
+			<div class="layui-input-block"><@imageuploader isback="true" />
+			</div>
+		</div>
+
+		<div class="layui-layer-btn layui-layer-btn-"style="padding: 8px 12px; z-index: 1000; position: fixed; left: 1px; width: 97%; height: 50px; background: rgba(230, 230, 230, 0.8)">
+			<button class="layui-btn layui-btn-normal save" type="submit"lay-submit="" lay-filter="savegift">保存</button>
+			<button class="layui-btn layui-btn-primary cancle">取消</button>
+		</div>
+	</form>
+</div>
+<script type="text/javascript">	
+var index = parent.layer.getFrameIndex(window.name);
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+    var check= /^(([1-9]+[.]?[0-9]{1,2})|[1-9])$/; 
+    //非空验证
+    form.verify({
+    	gift_name:function(value){
+    		if($.trim(value) == ""){
+    			return "请输入赠品名称";
+    		}
+    	},
+    	gift_price:function(value){
+    		if($.trim(value) == ""){
+    			return "请输入赠品价格";
+    		}
+    		if(!check.test(value)){  
+            	return "请输入大于零的数";
+            }
+    	},
+    	actual_store:function(value){
+    		if($.trim(value) == ""){
+    			return "请输入赠品库存";
+    		}
+    		if(!check.test(value)){  
+            	return "请输入大于零的数";
+            }
+    	}
+    	
+    });
+  	//关闭弹窗
+    $(".cancle").click(function(){
+     	parent.layer.close(index);
+    });
+    //保存添加
+	form.on('submit(savegift)', function(data){
+    	var options = {
+   			url:ctx+"/shop/admin/gift/save-add.do",
+   			type:"post",
+   			dataType:"json",
+   			async: false, 
+   			beforeSend:function(){  
+ 	   			  $('.save').attr("disabled", true);		       	
+ 	   			}, 
+   			success:function(data){
+   				if(data.result==1){	
+   					parent.$.Loading.success(data.message);
+   					parent.layer.close(index); //再执行关闭        
+   					parent.table.ajax.url(ctx+"/shop/admin/gift/list-json.do").load();
+   				}if(data.result==0){
+   					parent.$.Loading.error(data.message);
+   				}
+   			}
+   		};
+   		$("#giftAddForm").ajaxSubmit(options);
+       return false;
+    });
+
+});
+
+</script>

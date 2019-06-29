@@ -1,0 +1,44 @@
+ <!-- 团购列表 -->
+<#assign groupBuyListTag=newTag("groupBuyListTag")> 
+<#assign gbPage=groupBuyListTag('{"pageSize":12}')>
+<!-- 团购活动列表 -->
+<div class="group_list">
+	<ul>
+		<#if gbPage??>
+		<#list gbPage.page.result as gb>
+			<li class="c1">
+				<div class="group_content"> 
+					<a target="_blank" class="pic_thumb" href="${ctx}/groupbuy/groupbuy_goods.html?goodsid=${gb.goods_id}&act_id=${gb.act_id}" title="${gb.gb_name}">
+						<@image border="0" src="${gb.img_url!''}"  alt="${gb.gb_name!''}" />
+					</a>
+					<h3 class="title"><a target="_blank" href="${ctx}/groupbuy/groupbuy_goods.html?goodsid=${gb.goods_id}&act_id=${gb.act_id}" title="${gb.gb_name}"><@substring title="${gb.gb_name}" length="66" dot="..." /></a></h3>
+					<div class="group_price"> 
+						<span class="price"><i>¥</i>${gb.price}</span>
+						<div class="dock"><span class="group_discount">${gb.price/gb.original_price*10}&nbsp;折</span> <del class="group_price">¥${gb.original_price}</del></div>
+						<span class="group_num"><em>${gb.buy_num+gb.visual_num}</em>件已购买</span>
+						<a class="buy-button" target="_blank" href="${ctx}/groupbuy/groupbuy_goods.html?goodsid=${gb.goods_id}&act_id=${gb.act_id}">
+							<#if gb.goods_num==0>
+								已售罄
+							<#else>
+								我要团
+							</#if>
+						</a>
+					</div>
+				</div>
+			</li>
+		</#list>
+		</#if>
+	</ul>
+</div>
+ <!--分页-->
+<div class="tc mt20 mb20">
+	<@ajaxpager pageno="${page!1}" pagesize="${gbPage.pageSize}" totalcount="${gbPage.totalCount}"/>
+</div>
+<form >
+	<input type="hidden" name="catid" value="${gbPage.catid}"/>
+	<input type="hidden" name="minprice" value="${gbPage.minprice}"/>
+	<input type="hidden" name="maxprice" value="${gbPage.maxprice}"/>
+	<input type="hidden" name="sort_key" value="${gbPage.sort_key}"/>
+	<input type="hidden" name="sort_type" value="${gbPage.sort_type}"/>
+	<input type="hidden" name="area_id" value="${gbPage.area_id}"/>
+</form>

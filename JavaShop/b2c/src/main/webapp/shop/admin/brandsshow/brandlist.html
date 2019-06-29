@@ -1,0 +1,129 @@
+<#include '/admin/header.html' > 
+<style>
+ .layui-btn{
+  background:#1E9FFF;
+  }
+  td input{
+      width: 70px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    height: 20px;
+    padding-left: 5px;
+  }
+</style>
+<#assign dateFormat="com.enation.framework.directive.DateformateDirective"?new()>
+<div class="admin-main">
+   <div>
+	 <div class="table_control">
+            <div class="table_opera">
+                <button type="button" title="添加" class="layui-btn layui-btn-primary layui-btn-small"  onclick="newTab('添加品牌','${ctx}/shop/admin/brands-show/search.do?tag_id=${tag_id}')"><i class="layui-icon">&#xe608;</i></button>
+                <button type="button" title="保存排序" class="layui-btn layui-btn-primary layui-btn-small" id="saveOrdernum"  onclick="saveOrdernum()"><i class="layui-icon">&#xe618;</i></button>
+            </div>
+        </div>
+       </div>
+        
+         <!--表格区域  -->
+	<form id="goodsShowform">
+	<input type="hidden" name="tag_id" value="${tag_id }" id="tagid"/>
+      <table id="tagdata" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+        <thead>
+       	  <tr>
+            <th>品牌名称</th>
+            <th>排序</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+      </table>
+	</form>
+		<div id="SMTPinfo" style="display: none;"></div>
+</div>
+
+<script type="text/javascript"> 
+var table;
+$(function(){
+	 table = $('#tagdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/brands-show/list-json-brand.do?ajax=yes&tag_id=${tag_id}',   
+	    },
+	    columns: [ //定义列
+	        {data: "name"},
+	        {data: null,"render": function(data,type,row){
+	        	var val="<input type=\"text\"  maxlength=\"10\" class=\"input_text\" value=\""+data.ordernum+"\" name=\"brand_num\"/>";
+	    		val+="<input type=\"hidden\" name=\"brand_id\" value=\""+data.brand_id+"\" />" ;
+	    	    return val;
+	        }},
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small _aa' name='tag_id' onclick='del("+data.rel_id+","+data.tag_id+")'>删除</a>";		//获取值:data["brand_id"]
+	       	}}
+	     ]
+	});
+});
+
+//删除
+function del(rel_id,tag_id){ 
+	if(confirm("确定删除标签？")){
+		$.ajax({
+			url :"${ctx}/shop/admin/brands-show/del.do?tag_id="+tag_id+"&id="+rel_id,
+			type : "POST",
+			dataType : 'json',
+			success : function(result) {
+				if(result.result==1){
+					$.Loading.success(result.message);
+					table.ajax.url(ctx+"/shop/admin/brands-show/list-json-brand.do?ajax=yes&tag_id=${tag_id}").load();
+				}else{
+					$.Loading.error(result.message);				
+				}
+			},
+			error : function(e) {
+				alert("出现错误 ，请重试");
+			}
+        }); 
+	} 
+}
+//排序
+function saveOrdernum(){
+	if(confirm("确定保存排序？")){
+		var is_num=true;
+		var classBlack = document.getElementsByClassName('input_text');
+		for (var i=0; i<classBlack.length; i++) {
+		   if(isNaN(classBlack[i].value)){
+			   is_num=false;
+		   }
+		   if(classBlack[i].value==""){
+			   is_num=false;
+		   }
+		}
+		if(is_num){
+		var options = {
+				url : "${ctx}/shop/admin/brands-show/save-order.do?ajax=yes",
+				type : "POST",
+				dataType : 'json',
+				success : function(result) {
+					if(result.result==1){
+						$.Loading.success(result.message);
+					}else{
+						$.Loading.error(result.message);				
+					}
+				},
+				error : function(e) {
+					$.Loading.error("出现错误 ，请重试");
+				}
+			};
+			$('#goodsShowform').ajaxSubmit(options);	
+		}else{
+			$.Loading.error("您输入的排序不是数字,并且不能为空");
+		} 
+	}
+}
+</script>
+<#include '/admin/footer.html' >

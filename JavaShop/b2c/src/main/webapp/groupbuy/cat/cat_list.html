@@ -1,0 +1,122 @@
+<#include '/admin/header.html' > 
+<style>
+ .layui-btn{
+  background:#1E9FFF;
+  }
+</style>
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+            <h2>操作提示</h2>
+            <ul>
+                <li><span>·</span>团购分类关联参加团购的商品存放到团购活动中的商品类型</li>
+                <li><span>·</span>团购分类功能有添加，删除，修改</li>
+            </ul>
+        </div>
+        <!--按钮操作  -->
+        <div class="table_control">
+            <div class="table_opera">
+                <button type="button" id="addCat" title="新增" class="layui-btn layui-btn-primary" ><i class="icon iconfont icon-llalbumshopselectorcreate"></i></button>
+                <button type="button" id="delCat" title="删除" class="layui-btn layui-btn-primary " onclick="del_Cat()"><i class="icon iconfont icon-guanbi1"></i></button>
+                <button type="button" title="提示" class="layui-btn layui-btn-primary" id="explain"><i class="icon iconfont icon-tishi1"></i></button>
+            </div>
+        </div>
+   </div>
+   <!--表格区域  -->
+   <form id="catform">
+    <table id="cat" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+        <thead>
+          <tr>
+            <th><input type='checkbox'  class='btn-checkall fly-checkbox' id='selected-all'></th>
+            <th>分类名称</th>
+            <th>排序</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+    </table>
+   </form>
+</div>
+<script type="text/javascript">
+var table;
+$(function(){
+	 table = $('#cat').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/group-buy-cat/list-json.do',
+	    },
+	    columns: [ //定义列
+            {"data": function (obj) {
+                return '<input type="checkbox" name="catid" class="fly-checkbox" value=' + obj.catid + '>';
+            		}},
+	        {data: "cat_name"},
+	        {data: "cat_order"},
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small layui-btn-danger' title='修改' id='editCat' onclick='edit_Cat("+data.catid+")'>修改</a>";			
+	       	}}
+	     ]
+	});
+	 
+	//添加分类
+	 $("#addCat").click(function(){
+	   	 layer.open({
+	            title:"添加分类",//标题
+	            maxmin :true,//右上角可否放大缩小
+	            type:2,//弹框的类型
+	            shade: [0.3, '#000'],//黑色背景
+	            shadeClose:false,//黑色背景是否可以点击关闭
+	            content:ctx+'/shop/admin/group-buy-cat/add.do',//内容的URL
+	            area:['400px','210px'],//弹框大小
+	            scrollbar: false//是否允许浏览器出现滚动条
+	        });
+		});
+});
+
+//修改分类
+function edit_Cat(catid){
+	layer.open({
+        title:"修改地区",//标题
+        maxmin :true,//右上角可否放大缩小
+        type:2,//弹框的类型
+        shade: [0.3, '#000'],//黑色背景
+        shadeClose:false,//黑色背景是否可以点击关闭
+        content:ctx+'/shop/admin/group-buy-cat/edit.do?catid='+catid,//内容的URL
+        area:['400px','210px'],//弹框大小
+        scrollbar: false//是否允许浏览器出现滚动条
+    });
+}
+
+//删除
+function del_Cat(){
+	var check = $("input[name='catid']").is("input:checked");
+	if(check == false){
+		alert("请选择删除的团购分类");
+		return false;
+	} 
+	if (!confirm("确认要删除团购分类吗？")) {
+		return;
+	}
+   var options = {
+		   url:ctx+"/shop/admin/group-buy-cat/batch-delete.do",
+			type:"post",
+			dataType:"json",
+			success:function(data){
+				if(data.result==1){
+					$.Loading.success(data.message)
+					table.ajax.url(ctx+"/shop/admin/group-buy-cat/list-json.do").load();
+				}
+			}
+   };
+   $("#catform").ajaxSubmit(options);
+}
+
+</script>

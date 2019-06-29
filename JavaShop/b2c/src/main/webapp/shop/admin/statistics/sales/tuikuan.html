@@ -1,0 +1,241 @@
+<#include '/admin/header.html' > 
+<style>
+	tr td{
+		padding-right: 10px;
+	}
+	td select{
+		height: 25px;
+	}
+	.admain-main{
+		margin:20px 30px 10px;
+	    box-shadow: 0px 0px 6px rgba(43, 43, 43, 0.17);
+    	background: white none repeat scroll 0 0;
+	}
+	</style>
+<div class="admain-main">
+<div class="table_control">
+	<div style="display: block;" class="searchAdvanced">
+		<input id="Advanced" name="Advanced" type="hidden" value="0" />
+		<table width="98%" border="0" cellspacing="0" cellpadding="8">
+			<tr style="float: right;line-height: 47px;">
+				<td width="100">
+					按订单周期：
+				</td>
+				<td width="90" >
+					<select id="cycle_type" onchange="statistics_mode(this.value)" >
+						<option value="1">按照月统计</option>
+						<option value="0">按照年统计</option>
+					</select>
+				</td>
+				<td width="70" >
+					<select id="year">
+					</select>
+				</td>
+				<td width="70" >
+					<select id="month">
+					</select>
+				</td>
+				<td width="200" style="text-align: center;">
+						<a id="search_statis"  href="javascript:void(0);"	class="layui-btn layui-btn-normal layui-btn-small">开始搜索</a>
+				</td>
+				<td></td>
+			</tr>
+		</table>
+		</div>
+		</div>
+	<div class="clear height10"></div>
+		
+	<div class="input">
+	
+			<div class="shadowBoxWhite wf100 whiteBox">
+				<div class="text">
+					<div class="tab-page">
+						<div class="tab-panel">
+							<table class="form-table" style="width: 100%;">
+								<tr>
+									<td>
+										<div id="main" style="width:95%;min-width: 310px; height: 300px; margin: 0 auto">
+										</div>
+									</td>
+								</tr>
+							</table>
+
+							
+						</div>
+					</div>
+				</div>
+		
+		</div>
+	</div>
+	<div class="clear height10"></div>
+</div>
+<script type="text/javascript">
+var cycle=null;
+var option;
+var myChart;
+$(function(){
+   var cycle_type = $("#cycle_type :selected").val();
+   moneyEcharts("月");
+   var d = new Date()
+   saleMoney(cycle_type,d.getFullYear(),d.getMonth() + 1)
+});
+// 生成图表
+function moneyEcharts(obj){
+    
+	 myChart = echarts.init(document.getElementById('main'));
+	option = {
+			color: ['#3398DB'],
+		    title: {
+		    	x:'center',
+		    	text:'退款金额统计（'+obj+")"
+		    },
+		    tooltip: {
+		        trigger: 'axis'
+		    },
+		    toolbox: {
+		        show : true,
+		        feature : {
+		            mark : {show: true},
+		            magicType : {show: true, type: ['line', 'bar']},
+		            restore : {show: true},
+		            saveAsImage : {show: true}
+		        }
+		    },
+		    legend: {
+		    	x:'center',y:'bottom',
+	            data:["本"+obj]
+	        },
+		    xAxis:  {
+		        type: 'category',
+		        boundaryGap: true,
+		        data: []
+		    },
+		    yAxis: {
+		        type: 'value',
+		        name:'金额（￥）',
+		    	axisLabel : {
+	            formatter: '{value} ￥'
+	        },
+	        	boundaryGap : true
+	    
+		    },
+		    series: [
+		        {
+		        	 data: [],
+		            name:"本"+obj,
+		            type:'line',
+		            markPoint: {
+		                data: [
+		                    {type: 'max', name: '最大值'},
+		                    {type: 'min', name: '最小值'}
+		                ]
+		            },
+		            markLine: {
+		                data: [
+		                    {type: 'average', name: '平均值'}
+		                ]
+		            }
+		        },
+		       
+		    ]
+		};
+
+	myChart.setOption(option);
+
+
+    
+    
+       
+}
+
+function saleMoney(cycle_type,year,month){
+	var this_type = $("#this_type").val();
+	
+	if(cycle_type!=this_type){
+		if(cycle_type==1){					//判断按哪个周期显示数据
+			moneyEcharts('月');					
+			//$("#this_type").val(cycle_type);
+		}else{
+			moneyEcharts('年');
+			//$("#this_type").val(cycle_type);
+		}
+	}
+	
+	jQuery.getJSON("${ctx}/shop/admin/orderReturnedStatistics/returned-statistics-json.do",{cycle_type:cycle_type,year:year,month:month}, function(data) {
+		var categories = [];
+		for(var i in data.message) {
+			categories.push(parseInt(i) + 1);
+		} 	
+		myChart.setOption({ 
+			xAxis:{
+				data:categories
+			},
+			series: {
+                 data :data.message,
+             }
+        });
+	});
+	
+	if(cycle_type==1){	
+		if(month==1){
+			year = year-1;
+			month = 12;
+		}else{
+			month = month-1;
+		}
+	}else{
+		year = year-1;
+	}
+	
+	
+}
+<!--data -->
+$(function() {
+	var currentYear = new Date().getFullYear();
+	var historyYear = currentYear-10;
+	
+	var currentmonth = new Date().getMonth();
+	currentmonth+=1;
+	for(var i=0;i<20;i++){
+		if(currentYear==historyYear){
+			$("#year").append("<option value='"+historyYear+"' selected='selected' >"+historyYear+"年</option>" );
+		}else{
+			$("#year").append("<option value='"+historyYear+"' >"+historyYear+"年</option>" );
+		}
+		historyYear++;
+	}
+	
+	for(var i=1;i<=12;i++){
+		if(currentmonth==i){
+			$("#month").append("<option value='"+i+"' selected='selected' >"+i+"月</option>" );
+		}else{
+			$("#month").append("<option value='"+i+"' >"+i+"月</option>" );
+		}
+	}
+	
+
+	$("input[type=text]").attr("autocomplete", "off");
+	
+	$("#search_statis").click(function(){
+		refresh_data();
+	})
+		
+});
+function statistics_mode(mode_value){
+	if(mode_value==1){
+		$("#month").show();
+	}else{
+		$("#month").hide();
+	}
+	refresh_data();
+}
+function refresh_data(){
+	
+	var cycle_type = $("#cycle_type :selected").val();
+	var year = $("#year :selected").val();
+	var month = $("#month :selected").val();
+	//下单金额
+	saleMoney(cycle_type,year,month);
+}
+
+</script>

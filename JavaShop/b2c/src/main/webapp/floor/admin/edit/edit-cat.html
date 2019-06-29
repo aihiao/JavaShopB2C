@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN"
+		"http://www.w3.org/TR/html4/strict.dtd">
+
+<html lang="en">
+<head>
+	<!-- <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" content="ie=edge"/>
+
+       ie11 不能正常传递 值 的bug解决
+
+       -->
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=9" > </meta>
+	<title>${(site.sitename)!''}-后台管理</title>
+	<style type="text/css">
+		body{
+			margin:0px;
+			font-family:Arial,"宋体",Verdana,sans-serif;
+			font-size:12px;
+		}
+		html,body {padding: 0;margin: 0; overflow-x:hidden; overflow-y:auto;}
+		dl,dd{margin:0px}
+		ul{
+			list-style-type:none;
+			margin:0px;
+			padding:0px;
+		}
+	</style>
+
+	<script>
+        var ctx='${ctx}';
+	</script>
+
+	<link rel="stylesheet" type="text/css" href="${ctx}/adminthemes/new/js/easy-ui/themes/gray/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="${ctx}/adminthemes/new/js/easy-ui/themes/icon.css"/>
+
+	<link href="${ctx}/adminthemes/new/css/main.css" rel="stylesheet" type="text/css" />
+	<link href="${ctx}/adminthemes/new/css/style.css" rel="stylesheet" type="text/css" />
+	<link href="${ctx}/adminthemes/new/css/dialog.css" rel="stylesheet" type="text/css" />
+
+	<script type="text/javascript" src="${ctx}/adminthemes/new/js/jquery-1.8.3.min.js"></script>
+	<script type="text/javascript" src="${ctx}/adminthemes/new/js/jquery.form-3.51.js"></script>
+
+	<script type="text/javascript" src="${ctx}/shop/admin/js/jquery.ui.js"></script>
+	<script type="text/javascript" src="${ctx}/adminthemes/new/js/easy-ui/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="${ctx}/adminthemes/new/js/easy-ui/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="${ctx}/adminthemes/new/js/jquery.blockUI.js"></script>
+	<script type="text/javascript" src="${ctx}/adminthemes/new/js/jquery.loading.js"></script>
+
+		<!--建议手动加在语言，避免在ie下有时因为加载语言失败导致编辑器加载失败-->
+		<!--这里加载的语言文件会覆盖你在配置项目里添加的语言类型，比如你在配置项目里配置的是英文，这里加载的中文，那最后就是中文-->
+		<script type="text/javascript" charset="utf-8" src="${ctx}/ueditor/lang/zh-cn/zh-cn.js"></script>
+
+			</head>
+<body>
+
+
+<div id="goodsSelectDiv"></div>
+<div id="photoDiv"></div>
+<style type="text/css">
+.tag-box {
+	width: 400px;
+	height: 80px;
+	border-radius: 3px;
+	position: relative;
+	margin: 20px auto;
+	border:1px solid #dddddd;
+}
+
+</style>
+
+<div class="easyui-panel" style="border-style: none;">
+	<div style="padding: 10px 0 10px 60px">
+		<form id="editCatForm" method="post" class="validate"
+			enctype="multipart/form-data">
+			<input type="hidden" id="floor_id" name="floor_id" value="${floor_id}" />
+			<table>
+				<tr>
+					<th>左侧分类</th>
+					<td>
+						<div class="tag-box" id="cat_text">
+							<#if catList?? && catList?size gt 0>
+								<#list catList as cat>
+									<#if cat.hasChildren>
+										<#assign children2=cat.children /> 
+										<#list children2 as cat2>
+											<#if cat2_index lt 3>
+												<a href="${ctx}/goods_list.html?cat=${cat2.cat_id}" title="${cat2.name }">${cat2.name }</a>
+											</#if>
+										</#list>
+									</#if>
+								</#list>
+							</#if>
+						</div>
+						<p>添加商品分类最多显示5个</p>
+					</td>
+				</tr>
+				<tr>
+					<th>分类选择</th>
+					<td width="200px"><select id="catId" onchange="changeSelect()"
+						name="cat_id"
+						style="width: 200px;">
+					</select></td>
+				</tr>
+			</table>
+		</form>
+	</div>
+	<div class="buttonWrap">
+		<a href="javascript:;" id="edit-cat" class="easyui-linkbutton">确定</a>
+	</div>
+</div>
+<script type="text/javascript">
+		$(function(){
+			var cat_id=${cat_id!'0'};
+			if(cat_id!=0){
+				$("#catId").combotree({
+					url:"${ctx}/shop/admin/cat/add-list-json.do",
+					required:false,
+					height:28,
+					value:cat_id,
+					onChange: function () {
+						var tree=$("#catId").combotree("tree");
+						//var node = $("#catId").combotree("options");
+						var node=tree.tree("getSelected");
+						var childNode=tree.tree("getChildren",node.target);
+						$("#cat_text").html('');
+						$("#cat_text").val('');
+						for(var i= 0;i<childNode.length;i++){
+							 var parent=tree.tree("getParent",childNode[i].target);
+							 if(parent.text==node.text){//判断是否为亲子节点
+								 var childNode2=tree.tree("getChildren",childNode[i].target);
+						    	 var length;
+						    	 if(childNode2.length>3){
+						    		 length=3;
+						    	 }else{
+						    		 length=childNode2.length;
+						    	 }
+								 for(var j=0;j<length;j++){
+									 $("#cat_text").html($("#cat_text").html()+"<a href='${ctx}/goods_list.html?cat="+childNode2[j].id+" title='"+childNode2[j].text+"' >"+childNode2[j].text+"</a>");
+							 	}
+								 							 
+							 }
+		            	}
+					}
+				});
+			}else{
+				$("#catId").combotree({
+					url:"${ctx}/shop/admin/cat/add-list-json.do",
+					required:false,
+					height:28,
+					onChange: function () {
+						var tree=$("#catId").combotree("tree");
+						//var node = $("#catId").combotree("options");
+						var node=tree.tree("getSelected");
+						var childNode=tree.tree("getChildren",node.target);
+						$("#cat_text").html('');
+						$("#cat_text").val('');
+						for(var i= 0;i<childNode.length;i++){
+							 var parent=tree.tree("getParent",childNode[i].target);
+							 if(parent.text==node.text){//判断是否为亲子节点
+								 var childNode2=tree.tree("getChildren",childNode[i].target);
+						    	 var length;
+						    	 if(childNode2.length>3){
+						    		 length=3;
+						    	 }else{
+						    		 length=childNode2.length;
+						    	 }
+								 for(var j=0;j<length;j++){
+									 $("#cat_text").html($("#cat_text").html()+"<a href='${ctx}/goods_list.html?cat="+childNode2[j].id+" title='"+childNode2[j].text+"' >"+childNode2[j].text+"</a>");
+							 	}
+								 							 
+							 }
+		            	}
+					}
+				});
+			}
+
+
+			$("#edit-cat").click(function(){
+
+
+                var options = {
+                    url : "${ctx}/core/admin/template/save-cat.do?ajax=yes",
+                    type : "POST",
+                    dataType : 'json',
+                    success : function(result) {
+                        if (result.result == 1) {
+
+                            $.Loading.success(result.message);
+                        }
+                        if (result.result == 0) {
+                            $.Loading.error(result.message);
+                        }
+                    },
+                    error : function(e) {
+                        $.Loading.error("出现错误 ，请重试");
+                    }
+                };
+                $("#editCatForm").ajaxSubmit(options);
+			});
+		});
+	
+</script>
+</body>
+</html>

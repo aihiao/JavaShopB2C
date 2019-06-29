@@ -1,0 +1,151 @@
+<#include '/admin/header.html' >
+<style>
+.page_explain ul li{
+height:30px;
+}
+</style>
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+            <h2>操作提示</h2>
+            <ul>
+                <li><span>·</span>团购活动状态：未审核，已审核，审核拒绝。</li>
+                <li><span>·</span>团购活动商品管理功能：查看团购商品信息，筛选。</li>
+            </ul>
+        </div>
+        <!--按钮操作  -->
+        <div class="table_control">
+            <div class="table_opera">
+                <button type="button" class="layui-btn layui-btn-primary " title="提示" id="explain"><i class="icon iconfont icon-tishi1"></i></button>
+            </div>
+            <!--条件筛选  -->
+            <div class="table_search">
+				<select id="returnStatus" style="height: 30px;margin-right:10px;margin-top: 8px;display:inline-block">
+					<option value="">全部</option>
+					<option value="0">未审核</option>
+					<option value="1">已审核</option>
+					<option value="2">已拒绝</option>
+				</select> 
+				<a  href="javascript:void(0)" type="button" class="layui-btn layui-btn-primary layui-btn-small" id="searchReturned">筛选</a>
+			</div>
+        </div>
+   </div>
+   
+   <!--表格区域  -->
+   <form id="groupbuyform">
+    <table id="groupBugTab" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+        <thead>
+          <tr>
+            <th>团购名称</th>
+            <th>活动名称</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>团购状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+      </table>
+    </form>
+</div>
+<script type="text/javascript">
+var table;
+$(function(){
+	 table = $('#groupBugTab').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/group-buy/list-json.do?actid=${actid}',
+	    },
+	    columns: [ //定义列
+	        {data: "gb_name"},
+	        {data: "act_name"},
+	        {data: null,"render": function(data, type, row) {
+	        	if(data.start_time==null){
+	        		return " ";
+	        	}else{
+	        		return getFormatDateByLong(data.start_time, "yyyy-MM-dd hh:mm:ss");
+	        	}
+	       	}},
+	        {data: null,"render": function(data, type, row) {
+	        	if(data.end_time==null){
+	        		return " ";
+	        	}else{
+	        		return getFormatDateByLong(data.end_time, "yyyy-MM-dd hh:mm:ss");
+	        	}
+	       	}},
+	        {data: null,"render": function(data, type, row) {
+	        	if(data.gb_status==0){
+	        		return "未审核";
+	        	}else if(data.gb_status==1){
+	        		return "已审核";
+	        	}else if(data.gb_status==2){
+	        		return "已拒绝";
+	        	}
+	       	}},
+	        {data: null,"render": function(data, type, row) {
+	        	if(data.gb_status==0){
+	        		return "<a class='layui-btn layui-btn-small layui-btn-normal' title='审核' onclick='auth(1,"+data.gb_id+")'>审核</a>"
+	        		+"&nbsp"+"<a class='layui-btn layui-btn-small layui-btn-normal' title='拒绝' onclick='auth(2,"+data.gb_id+")''>拒绝</a>"
+	        		+"&nbsp"+"<a class='layui-btn layui-btn-small layui-btn-normal' title='团购商品信息' onclick='newTab(\"团购商品信息\",\"${ctx}/shop/admin/group-buy/edit.do?gbid="+data.gb_id+"\")'><i class='icon iconfont icon-searchlist'></i></a>";
+	        	}else{
+	        		return "<a class='layui-btn layui-btn-small layui-btn-normal' title='团购商品信息' onclick='newTab(\"团购商品信息\",\"${ctx}/shop/admin/group-buy/edit.do?gbid="+data.gb_id+"\")'><i class='icon iconfont icon-searchlist'></i></a>";
+	        	}
+	       	}}
+	     ]
+	});
+	 
+	 
+	 $("#searchReturned").click(function(){
+			_searchReturned(table);
+		});
+});
+
+//筛选
+function _searchReturned(table){
+	var status = $("#returnStatus").val();
+	var url = table.ajax.url("${ctx}/shop/admin/group-buy/list-json.do?actid=${actid}&status="+status);
+	url.load();
+}
+
+
+
+
+function auth(status,gbid){
+	if( !confirm("确认吗？") ){
+		return false;
+	}
+	$.ajax({
+		url:"${ctx}/shop/admin/group-buy/auth.do",
+		data:"gbid="+gbid+"&status="+status,
+		dataType:"json",
+		success:function(json){
+			if(json.result==1){
+				$.Loading.success("操作成功");
+				table.ajax.reload();
+			}
+		}
+	});
+}
+
+
+</script>
+<#include '/admin/footer.html' >
+
+
+
+
+
+
+
+
+
+

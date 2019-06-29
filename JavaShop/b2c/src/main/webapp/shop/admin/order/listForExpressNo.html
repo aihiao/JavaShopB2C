@@ -1,0 +1,53 @@
+<#include '/admin/sonheader.html' >
+<style>
+select{
+height:25px;
+}
+input{
+height:25px;
+}
+</style>
+<div class="easyui-panel" style="border-style:none;width:99%;" >
+	<div style="float: left; height: 25px;">
+	</div>
+	<div >
+		<form id="addExpressNoForm" class="addExpressNoForm" method="post" class="validate" >
+			<table  class="layui-table">
+				<thead>
+				<tr>
+					<th>订单号</th>
+					<th>收货人</th>
+					<th>配送方式</th>
+					<th>支付方式</th>
+					<th>快递公司</th>
+					<th style="text-align: center;">快递单号</th> 
+				</tr>
+				</thead>
+				<#list orderList as order>
+				<tr>
+					<td><input type="hidden" name="order_id" value="${order.order_id }" />${order.sn }  </td>
+					<td>${order.ship_name}</td>
+					<td>${order.shipping_type}</td>
+					<td>${order.payment_name}</td>
+					<td>
+						<select name="logi_id"  class="logi_id">
+							<#list logi_list as logi>
+								<option value="${logi.id}" <#if order.logi_id?? && order.logi_id==logi.id> selected="selected" </#if> >
+									${logi.name}
+								</option>
+							</#list>
+						</select>
+					</td>
+					<td>
+						<input class="easyui-validatebox input_text expressno_${order_index}" maxlength="20"  name="expressno" id="expressno" style="width:120px"  validType="englishCheckSub"
+							<#if order.ship_no??>
+								value="${order.ship_no }" 
+							</#if>  
+							data-options="required:true" /> 
+					</td>
+				</tr>
+				</#list>
+			</table>
+		</form>
+	</div>
+</div>

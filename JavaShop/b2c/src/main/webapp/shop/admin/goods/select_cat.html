@@ -1,0 +1,60 @@
+<#include '/admin/header.html' >
+<style type="text/css">
+	h1{
+		width: 85px;
+		height: 25px;
+		color: #06548e;
+		border:1px solid #ccc;
+		border-radius: 15px;
+		background: none;
+		line-height: 25px;
+		text-align: center;
+		margin: 10px;
+	}
+	.__GCD__content .__GCD__input input{
+	height:30px;
+	line-height:30px;
+	padding:6px 10px;
+	}
+</style>
+<link rel="stylesheet" type="text/css" href="${ctx}/adminthemes/version3/plugins/select2/css/select2.min.css"/>
+<script type="text/javascript" src="${ctx}/adminthemes/version3/plugins/select2/js/select2.min.js"></script>
+<script type="text/javascript" src="${ctx}/statics/e_tools/js/jquery.goodsCatsEdit.js"></script>
+
+<div class="admin-main">
+	<div style="width: 100%;margin-top: 5px;" >
+	     <p style="height: 5px;"></p>
+		<h1>选择分类</h1>
+	</div>
+	<div id="cat_box">
+	    <script>
+	    	var catid=0; 
+	        var _goodsCatEdit = $('#cat_box').goodsCatsEdit({
+	            canEdit  : false,
+	            callback : function(cat){
+	            	catid = cat.id;
+	            }
+	        }).init();
+	    </script>
+	</div>
+	
+	<div style="width: 100%;text-align: center;">
+		<a class="layui-btn layui-btn-normal next-btn">下一步</a>
+	</div>
+</div>
+
+<script>
+
+$(function(){
+	//下一步操作
+	$(".next-btn").click(function(){
+		if(catid!=0){
+			location.href="${ctx}/shop/admin/goods/add.do?catid="+catid+"&_="+new Date().getTime();
+		}
+	})
+})
+
+</script>
+
+
+<#include '/admin/footer.html' >

@@ -1,0 +1,114 @@
+<#include '/admin/header.html' >
+<#assign dateFormat="com.enation.framework.directive.DateformateDirective"?new()>
+<style>
+
+</style>
+<div id="loading"></div>
+<div class="admin-main">
+<script type="text/javascript" src="${ctx}/statics/e_tools/js/jquery.goodsCatsSelect.js"></script>
+	<form id="gridform" method="post">
+	<input type="hidden" name="tagid" value="${tagid }"/>
+	<input type="hidden" name="tagids" value=""/>
+	<div class="table_control">
+		<div class='buttonArea'>
+			<div class="table_opera">
+				<span id="searchbtn">
+					 <button type="button" title="添加选中" class="layui-btn layui-btn-primary"  onclick="controlGoods()" style="width:55px;"> <i class="layui-icon">&#xe641;</i></button>
+				</span>
+			</div>
+		</div>
+	</div>
+	<div class="clear height10"></div>
+		<div class="shadowBoxWhite tableDiv">
+			<!--表格区域  -->	 
+			<table class="layui-table site-table table-hover"  id="goodsdata" width="100%" >
+				<thead>
+					<tr>
+						<th><input type='checkbox'  class='btn-checkall fly-checkbox' id='selected-all'></th>
+						<th>商品名称</th>
+						<th>销售价格</th>
+						<th>浏览数量</th>
+						<th>已购数量</th>
+						<th>添加时间</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</form>
+</div>
+<script type="text/javascript">
+var table;
+$(function(){
+	 table = $('#goodsdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/group-buy-act-tag/goods-list-json.do?tagid=${tagid}&actid=${actid}',
+	    },
+	    columns: [ //定义列
+            {"data": function (obj) {
+                return '<input type="checkbox" name="goods_id" class="fly-checkbox" value=' + obj.goods_id + '>';
+            		}},
+	        {data: "goods_name"},
+	        {data: "price"},
+	        {data: "view_num"},
+	        {data: "buy_num"},
+	        {data: null,"render": function(data, type, row) {
+	        	if(data.add_time==null){
+	        		return " ";
+	        	}else{
+	        		return getFormatDateByLong(data.add_time, "yyyy-MM-dd hh:mm:ss");
+	        	}
+	       	}}
+	     ]
+	});
+});
+
+
+function controlGoods(){
+	var obj = document.getElementsByName("goods_id");
+	var check_val = [];
+	for(k in obj){
+	   if(obj[k].checked){
+	        check_val.push(obj[k].value);         	
+	    }
+	}
+	if(check_val.length<1){
+		$.Loading.error("请选择要添加商品");
+		return;
+	}
+	
+	
+	var options = {
+			url : "${ctx}/shop/admin/goods-show/batch-add.do?ajax=yes",
+			type : "POST",
+			dataType : 'json',
+			success : function(result) {
+				
+				if(result.result==1){	
+					$.Loading.success("添加成功");
+					location.reload();     
+				}
+				if(result.result==0){
+					$.Loading.error(result.message);
+				}
+			},
+			error : function(e) {
+				$.Loading.error("出现错误 ，请重试");
+			}
+		};
+		$('#gridform').ajaxSubmit(options);	
+}
+</script>
+
+<#include '/admin/footer.html' >
+
+

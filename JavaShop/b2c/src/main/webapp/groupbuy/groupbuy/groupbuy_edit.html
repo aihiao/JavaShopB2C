@@ -1,0 +1,161 @@
+<#include '/admin/header.html' >
+<script type="text/javascript">
+        var ue = UE.getEditor('editor');
+</script>
+<style>
+.layui-input{
+	width: 500px;
+}
+.layui-unselect{
+	width: 100px;
+}
+</style>
+<div class="main">
+<form id="edit_form" class="layui-form layui-form-pane" action="" enctype="multipart/form-data" style="padding-top:10px">
+	<div class="detail" style="margin-left: 10px;">
+		<table class="layui-table">
+			<tr>
+				<th colspan="2" style="font-size: 18px;">团购基本信息</th>
+			</tr>
+			<tr>
+				<td>团购活动：</td>
+				<td>${groupBuyActive.act_name}</td>
+			</tr>
+			<tr>
+				<td>活动时间：</td>
+				<td>${groupBuyActive.add_time_str} - ${groupBuyActive.end_time_str}</td>
+			</tr>
+			<tr>
+				<td>团购名称：</td>
+				<td>
+					<input type="text"  name="gb_name" value="${groupBuy.gb_name!''}" maxlength="30" lay-verify="required"  autocomplete="off" class="layui-input" />
+					<input type="hidden" name="goods_id"  id="goods_id" 		value="${groupBuy.goods_id}" />
+					<input type="hidden" name="product_id"  id="product_id" 	value="${groupBuy.product_id!''}"/>
+					<input type="hidden" name="original_price"  id="original_price" value="${groupBuy.original_price}" />
+					<input type="hidden" name="gb_id" 		value="${groupBuy.gb_id}" />
+					<input type="hidden" name="gb_status"	value="${groupBuy.gb_status}"/>
+					<input type="hidden" name="act_id"  	value="${groupBuy.act_id}" />
+					<input type="hidden" name="img_url"  	value="${groupBuy.img_url}"/>
+				</td>
+			</tr>
+			<tr>
+				<td>团购副标题：</td>
+				<td><input type="text"  name="gb_title" value="${groupBuy.gb_title}" maxlength="30" lay-verify="required"  autocomplete="off" class="layui-input" /></td>
+			</tr>
+			
+			<tr>
+				<td>商品名称：</td>
+				<td id="product_name">${goods.name}</td>
+			</tr>
+			<tr>
+				<td>商品价格：</td>
+				<td id="price">${groupBuy.original_price}</td>
+			</tr>
+			<tr>	
+				<td>商品库存：</td>
+				<td id="store">${goods.store}</td>
+			</tr>
+			<tr>
+				<td>团购价格：</td>
+				<td>
+					<input type="text"  name="price" value="${groupBuy.price}" id="groupprice" maxlength="30" lay-verify="required" onkeyup="value=value.replace(/[^\d.]/g,'')"  autocomplete="off" class="layui-input" />
+				</td>
+			</tr>
+			<tr>
+				<td>团购数量：</td>
+				<td>
+					<input type="text"  name="goods_num" value="${groupBuy.goods_num}" maxlength="30" lay-verify="required|number"  autocomplete="off" class="layui-input" />
+				</td>
+			</tr>
+			<tr>
+				<td>团购图片：</td>
+				<td>
+					<img alt="团购图片" src="${image_src}" style="width: 200px;height: 200px;">
+				</td>
+			</tr>
+			<tr>	
+				<td>虚拟数量：</td>
+				<td>
+					<input type="text"  name="visual_num" value="${groupBuy.visual_num}" maxlength="30" lay-verify="required|number"  autocomplete="off" class="layui-input" />
+				</td>
+			</tr>
+			<tr>	
+				<td>限购数量：</td>
+				<td>
+					<input type="text"  name="limit_num" value="${groupBuy.limit_num}" maxlength="30" lay-verify="required|number"  autocomplete="off" class="layui-input" />
+				</td>
+			</tr>
+			<tr>
+				<td>团购分类：</td>
+				<td>
+					<select name="cat_id">
+						<option value="0">不限</option>
+						<#list groupbuy_cat_list as cat>
+							<option value="${cat.catid}" <#if cat.catid==groupBuy.cat_id> selected="selected" </#if>>${cat.cat_name}</option>
+						</#list>
+					</select>
+				</td>
+			</tr>
+			<tr>	
+				<td>团购区域</td>
+				<td>
+					<select name="area_id">
+						<option value="0">不限</option>
+						<#list groupbuy_area_list as area>
+							<option value=${area.area_id} <#if area.area_id==groupBuy.area_id> selected="selected" </#if>>${area.area_name}</option>
+						</#list>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>团购介绍：</td>
+				<td>
+					<script id="editor" name="description" type="text/plain" style="height:200px;width: 99%;">${groupBuy.remark!''}</script>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div class="layui-form-item" style="margin:20px 0 0 0;" >
+	<div class="layui-input-block">
+		<button class="layui-btn" lay-submit="" lay-filter="edit" >确认</button>
+	</div>
+</div>
+</form>
+</div>
+
+<script type="text/javascript">
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+
+    //监听提交
+    form.on('submit(edit)', function(data){
+    	if($("#store").text()<$("input[name='goods_num']").val()){
+    		$.Loading.error('团购数量不能大于库存数');
+    		return false;
+    	}
+    	var options = {
+    			url: ctx+"/shop/admin/group-buy/save-edit.do",
+    			type: "post",
+    			dataType: "json",
+    			success:function(result){
+    				if(result.result==1){
+    					$.Loading.success("修改成功");
+    					closeCurrent();
+    				}
+    				if (data.result == 0) {
+    					$.Loading.error(data.message);
+    				}
+    			},
+    			error : function(e) {
+    				parent.$.Loading.error("出现错误 ，请重试");
+    				$.Loading.error(result.message);
+    			}
+    	};
+   		$("#edit_form").ajaxSubmit(options);
+       return false;
+    });
+});
+</script>

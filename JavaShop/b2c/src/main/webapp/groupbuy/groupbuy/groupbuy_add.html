@@ -1,0 +1,227 @@
+<#include '/admin/header.html' >
+<script type="text/javascript">
+        var ue = UE.getEditor('editor');
+</script>
+<style>
+.layui-input{
+	width: 500px;
+}
+.layui-unselect{
+	width: 100px;
+}
+</style>
+<div class="main">
+<form id="add_form" class="layui-form layui-form-pane" action="" enctype="multipart/form-data" style="padding-top:10px">
+	<div class="detail" style="margin-left: 10px;">
+		<table class="layui-table">
+			<tr>
+				<th colspan="2" style="font-size: 18px;">团购基本信息</th>
+			</tr>
+			<tr>
+				<td style="width: 100px;">团购活动：</td>
+				<td>${groupBuyActive.act_name}</td>
+			</tr>
+			<tr>
+				<td>活动时间：</td>
+				<td>${groupBuyActive.add_time_str} - ${groupBuyActive.end_time_str}</td>
+			</tr>
+			<tr>
+				<td>团购名称：</td>
+				<td>
+					<input type="text"  name="gb_name" maxlength="30" lay-verify="required"  autocomplete="off" class="layui-input" />
+					<input type="hidden" name="goods_id"  id="goods_id"/>
+					<input type="hidden" name="goods_name"  id="goods_name"/>
+					<input type="hidden" name="product_id"  id="product_id"/>
+					<input type="hidden" name="original_price"  id="original_price"/>
+					<input type="hidden" name="gb_status"  value="0"/>
+					<input type="hidden" name="act_id"  value="${actid}"/>
+				</td>
+			</tr>
+			<tr>
+				<td>团购副标题：</td>
+				<td><input type="text"  name="gb_title" maxlength="30" lay-verify="required"  autocomplete="off" class="layui-input" /></td>
+			</tr>
+			<tr>
+				<td>选择商品：</td>
+				<td><a herf='javascript:void(0);' onclick='openGoodsSearchDlg()'style="color: #FF0000">选择商品</a></td>
+			</tr>
+			<tr>
+				<td>商品名称：</td>
+				<td id="product_name"></td>
+			</tr>
+			<tr>
+				<td>商品价格：</td>
+				<td id="price"></td>
+			</tr>
+			<tr>	
+				<td>商品库存：</td>
+				<td id="store"></td>
+			</tr>
+			<tr>
+				<td>团购价格：</td>
+				<td>
+					<input type="text"  name="price" id="groupprice" maxlength="30" lay-verify="required" onkeyup="value=value.replace(/[^\d.]/g,'')"  autocomplete="off" class="layui-input" />
+				</td>
+			</tr>
+			<tr>
+				<td>团购数量：</td>
+				<td>
+					<input type="text"  name="goods_num" maxlength="30" lay-verify="required|number"  autocomplete="off" class="layui-input" />
+				</td>
+			</tr>
+			<tr><!-- <input type="file" name="image" id="image"/> -->
+				<td>团购图片：</td>
+				<td>
+					<div class=" layui-box layui-upload-button" style="line-height:36px;">
+	    				<input type="file" id="image" name="image" lay-verify="" autocomplete="off" class="_upfile">
+		    			<span class="layui-upload-icon"><i class="layui-icon"></i>上传图片	</span>
+    				</div>
+				</td>
+			</tr>
+			<tr>	
+				<td>虚拟数量：</td>
+				<td>
+					<input type="text"  value="0" name="visual_num" maxlength="30" lay-verify="required|number"  autocomplete="off" class="layui-input" />
+				</td>
+			</tr>
+			<tr>	
+				<td>限购数量：</td>
+				<td>
+					<input type="text"  name="limit_num" maxlength="30" lay-verify="required|number"  autocomplete="off" class="layui-input" />
+				</td>
+			</tr>
+			<tr>
+				<td>团购分类：</td>
+				<td>
+					<select name="cat_id">
+						<option value="0">不限</option>
+						<#list groupbuy_cat_list as cat>
+							<option value="${cat.catid}">${cat.cat_name}</option>
+						</#list>
+					</select>
+				</td>
+			</tr>
+			<tr>	
+				<td>团购区域</td>
+				<td>
+					<select name="area_id">
+						<option value="0">不限</option>
+						<#list groupbuy_area_list as area>
+							<option value=${area.area_id}>${area.area_name}</option>
+						</#list>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>团购介绍：</td>
+				<td>
+					<script id="editor" name="remark" type="text/plain" style="height:200px;width: 99%;"></script>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div class="layui-form-item" style="margin:20px 0 0 0;" >
+	<div class="layui-input-block">
+		<button class="layui-btn" lay-submit="" lay-filter="save" >确认</button>
+	</div>
+</div>
+</form>
+</div>
+
+<script type="text/javascript">
+function openGoodsSearchDlg(){
+	layer.open({
+		 title:"商品选择",//标题
+	        maxmin :true,//右上角可否放大缩小
+	        type:2,//弹框的类型
+	        shade: [0.3, '#000'],//黑色背景
+	        shadeClose:false,//黑色背景是否可以点击关闭
+	        content:ctx+'/shop/admin/goods-select/list.do?sing=0',//内容的URL
+	        btn: ['保存'],
+	        yes:function(index, layero){
+	        	var checked =  layero.find("iframe").contents().find(" #goods_data").find("tr").hasClass("selected");
+	        	var finds = layero.find("iframe").contents().find("#goods_data").find(".selected");
+	        	if(checked){
+	        		var specs = finds.find("#specs").text();
+	        		var sn = finds.find("#sn").text();
+	        		var name = finds.find("#name").text();
+	        		var price = finds.find("#price").text();
+	        		var store = finds.find("#store").text();
+	        		var goods_id = finds.find("input[name='goods_id']").val();
+	        		var goods_name = finds.find("#name").text();
+	        		var product_id = finds.find("input[name='product_id']").val();
+	        		var original_price = finds.find("#price").text();
+	        		if(goods_id != ""){
+	        			if(specs != ""){
+	        				$("#product_name").html(name+" "+specs);
+	        			}else{
+	        				$("#product_name").html(name);
+	        			}
+	        			$("#price").html(price);
+	        			$("#store").html(store);
+	        			
+	        			
+	        			
+	        			$("#goods_id").val(goods_id);
+	        			$("#goods_name").val(name);
+	        			$("#product_id").val(product_id);
+	        			$("#original_price").val(original_price);
+	        		}
+	        	}else{
+	    			$.Loading.error('请选择团购商品');
+	    		}
+	        	layer.close(index);
+	        	
+	        },
+	        area:['820px','420px'],//弹框大小
+	        scrollbar: false//是否允许浏览器出现滚动条
+    });
+}
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+    
+    
+   
+    //监听提交
+    form.on('submit(save)', function(data){
+    	if(Number($("#store").text())<Number($("input[name='goods_num']").val())){
+    		
+    		$.Loading.error('团购数量不能大于库存数');
+    		return false;
+    	}
+    	if($("input[name='image']").val()==""){
+    		$.Loading.error('请选择团购图片');
+    		return false;
+    	} else{
+    		var size = $('#image')[0].files[0].size;
+    		if(size>2000*1024){
+    			$.Loading.error('图片不能大于2M');
+    			return false;
+    		}
+    	}
+    	
+    	var options = {
+    			url: ctx+"/shop/admin/group-buy/save-add.do",
+    			type: "post",
+    			dataType: "json",
+    			success:function(result){
+    				if(result.result==1){
+    					$.Loading.success("添加成功");
+    					
+    					closeCurrent();
+    				}
+    				if (data.result == 0) {
+    					$.Loading.error(data.message);
+    				}
+    			}
+    	};
+   		$("#add_form").ajaxSubmit(options);
+       return false;
+    });
+});
+
+</script>

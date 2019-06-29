@@ -1,0 +1,118 @@
+<#include '/admin/sonheader.html' >
+
+<div class="main">
+    <!--表单区域  -->
+	<form class="layui-form layui-form-pane" action="" id="editForm" enctype="multipart/form-data">
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">楼层标题</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="title" maxlength="8" lay-verify="title" autocomplete="off" class="layui-input" value="${floor.title}" >
+    		</div>
+  		</div>
+
+  		<#if pageid?exists>
+		<input name="page_id" id="page_id" type="hidden" value="${pageid}">
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">楼层色调</label>
+    		<div class="layui-input-block">
+    			<input type="hidden" name="style" value="new_storey">
+      			<input type="text" name="style_show" disabled="disabled" lay-verify="title" autocomplete="off" value="new_storey" class="layui-input" style="float:left;">
+      			<div class="layui-form-mid layui-word-aux">系统默认1种风格：new_storey(新风格)</div>
+    		</div>
+  		</div>
+  		</#if>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">显示</label>
+    		<div class="layui-input-block">
+      			<input type="radio" name="is_display" value="0" title="显示" <#if floor.is_display??&&floor.is_display==0>checked="checked"</#if>>
+				<input type="radio" name="is_display" value="1" title="不显示" <#if floor.is_display??&&floor.is_display==1>checked="checked"</#if>>
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">排序</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="sort" maxlength="5" lay-verify="number" autocomplete="off" value="${floor.sort}" class="layui-input">
+    		</div>
+  		</div>
+  		
+  		<input type="hidden" name="id" value="${floor.id}">
+		<input type="hidden" name="parent_id" value="${floor.parent_id}">
+  		
+  		<div class="layui-layer-btn layui-layer-btn- confirm-btn"> 
+  			<a class="layui-layer-btn0" type="submit" lay-submit="" lay-filter="save">保存</a>
+  			<a class="layui-layer-btn1">取消</a>
+  		</div>
+  	</form>
+</div>
+
+<script type="text/javascript">	
+var index = parent.layer.getFrameIndex(window.name);
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form(),
+        layedit = layui.layedit,
+        laydate = layui.laydate;
+
+    //自定义验证规则
+    form.verify({
+      title: function(value){
+        if(value.length < 4){
+          return '标题至少得4个字符啊';
+        }
+      }
+    });
+    //关闭按钮
+    $(".layui-layer-btn1").click(function(){
+    	parent.layer.close(index);
+    });
+    //监听提交
+    form.on('submit(save)', function(data){
+    	var options = {
+   			url:ctx+"/core/admin/floor/save-edit.do",
+   			type:"post",
+   			dataType:"json",
+   			success:function(data){
+   				if(data.result==1){	
+   					$.Loading.success(data.message);
+   					parent.layer.close(index); //再执行关闭        
+   					parent.table.ajax.url(ctx+"/core/admin/floor/get-list-by-parentid-json.do?parentid=0&pageid=${pageid}").load();
+   				}
+   			}
+   		};
+   		$("#editForm").ajaxSubmit(options);
+       return false;
+    });
+});
+
+
+$(function(){
+	
+	/* $.ajax({
+		url : ctx+"/shop/admin/cat/get-list-by-parentid-json.do?parentid=0",
+		type : "POST",
+		dataType : 'json',
+		success : function(result) {
+			var catHtml = "";
+			$.each( result, function(index, content){
+				
+				if (cat_id==content.id){
+					catHtml +="<input type='radio' name='cat_id' value="+content.id+" title='"+content.text+"' checked='checked'>";
+				}else{
+					catHtml +="<input type='radio' name='cat_id' value="+content.id+" title='"+content.text+"'>";
+				}
+				
+			})
+			console.log(catHtml);
+			$(catHtml).appendTo($("#catDiv"));
+			layui.form().render();
+		},
+		error : function(e) {
+			$.Loading.error("出现错误 ，请重试");
+		}
+	}); */
+	
+})
+
+</script>

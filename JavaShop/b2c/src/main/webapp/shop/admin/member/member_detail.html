@@ -1,0 +1,64 @@
+<#include '/admin/header.html' >
+
+<script type="text/javascript" src="${ctx}/shop/admin/js/MemberDetail.js"></script>
+
+<style type="text/css">
+.app-address {
+	height: 35px !important;
+}
+.app-address-title {
+	height: 35px !important;
+	line-height: 35px !important;
+}
+		.app-address-body{
+			margin-top: 14px;
+		}
+</style>
+
+<div class="admin-main">
+	<div style="display: block;" class="member_detail">
+		<div class="layui-tab layui-tab-card contentTab" style="float: none;" >
+			<ul class="layui-tab-title tab" >
+				<#list pluginTabs as key>
+				<li tabid="${key.order}"<#if key.order==3>
+					class="layui-this"</#if> >${key.tabTitle}</li> </#list>
+			</ul>
+
+			<div class="layui-tab-content shadowBoxWhite"
+				style="min-height: 100px; margin-bottom: 50px;">
+				<div class="text">
+					<div class="tab-page">
+						<#list pluginTabs as key>
+						<div tabid="${key.order}" class="tab-panel tab-show-${key.order}" <#if key.order!=3> style="display:none"</#if> >${key.tabHtml}</div>
+						</#list>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+//注意：选项卡 依赖 element 模块，否则无法进行功能性操作
+layui.use(['element','upload','form'], function() {
+	var element = layui.element();
+	var upload = layui.upload();
+	var form = layui.form();
+	
+	MemberDetail.init(${member_id!''});
+	  
+});
+
+$(function(){
+	$(".tab li").click(function(){
+		var tabID = $(this).attr("tabid");
+		$(".tab-page .tab-panel").hide();
+		$(".tab-show-"+tabID).show();
+	})
+})
+
+
+</script>
+
+<#include '/admin/footer.html' >

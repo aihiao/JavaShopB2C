@@ -1,0 +1,139 @@
+<#include '/admin/header.html' >
+<style>
+ .layui-btn{
+  background:#1E9FFF;
+  }
+</style>
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+            <h2>操作提示</h2>
+            <ul>
+                <li><span>·</span>标签列表分为商品标签，和品牌标签。  商品标签会出现在商品标签设置，品牌标签会出现在品牌标签设置。</li>
+                <li><span>·</span>商品标签会出现在商品标签设置，可以对标签进行商品相关操作。</li>
+                <li><span>·</span>品牌标签会出现在品牌标签设置，可以对品牌进行相关操作。</li>
+                <li><span>·</span>如果添加完标签后，点击操作，里面是无法对标签进行 商品或者品牌的标签类型 做更改的。</li>
+            </ul>
+        </div>
+        <!--按钮操作  -->
+        <div class="table_control">
+            <div class="table_opera">
+                <button type="button" id="addtag" title="添加" class="layui-btn layui-btn-primary" ><i class="icon iconfont icon-llalbumshopselectorcreate"></i></button>
+                <button type="button" id="deletetag" title="删除" class="layui-btn layui-btn-primary " onclick="delTag();"><i class="icon iconfont icon-guanbi1"></i></button>
+                <button type="button" title="提示" class="layui-btn layui-btn-primary" id="explain"><i class="icon iconfont icon-tishi1"></i></button>
+            </div>
+        </div>
+   </div>
+   
+   <!--表格区域  -->
+   <form id="tagform">
+    <table id="tagdata" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+        <thead>
+          <tr>
+            <th><input type='checkbox'  class='btn-checkall fly-checkbox' id='selected-all'></th>
+            <th>标签id</th>
+            <th>search_keyword</th>
+            <th>标签</th>
+            <th>标签类型</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+    </table>
+    <!--传值等区域(暂定)  -->
+    <div id="addBrand" ></div>
+   </form>
+</div>
+
+<!--js区域  -->
+<script>
+var table;
+$(function(){
+	
+	 table = $('#tagdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/tag/list-json.do',
+	    },
+	    columns: [ //定义列
+            {"data": function (obj) {
+                return '<input type="checkbox" name="tag_id" class="fly-checkbox" value=' + obj.tag_id + '>';
+            		}},
+	        {data: "tag_id"},
+	        {data: "goods_keyword"},
+	        {data: "tag_name"},
+	        {"data": function (obj) {
+	    		if(obj.type==1){
+	    			return '品牌标签';
+	    		}else{
+	    			return '商品标签';
+	    		}
+            }},
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small _aa' name='change_btn' onclick='editTag("+data["tag_id"]+")'>操作</a>";		//获取值:data["brand_id"]
+	       	}}
+	     ]
+	});
+	
+	$("#addtag").click(function(){
+	   	 layer.open({
+	            title:"添加标签",//标题
+	            maxmin :true,//右上角可否放大缩小
+	            type:2,//弹框的类型
+	            shade: [0.3, '#000'],//黑色背景
+	            shadeClose:false,//黑色背景是否可以点击关闭
+	            content:'${ctx}/shop/admin/tag/add.do',//内容的URL
+	            area:['560px','250px'],//弹框大小
+	            scrollbar: false//是否允许浏览器出现滚动条
+	        });
+		});
+});
+
+//修改标签
+function editTag(tag_id){
+	layer.open({
+        title:"修改标签",//标题
+        maxmin :true,//右上角可否放大缩小
+        type:2,//弹框的类型
+        shade: [0.3, '#000'],//黑色背景
+        shadeClose:false,//黑色背景是否可以点击关闭
+        content:'${ctx}/shop/admin/tag/edit.do?tagId='+tag_id,//内容的URL
+        area:['450px','200px'],//弹框大小
+        scrollbar: false//是否允许浏览器出现滚动条
+    });
+}
+
+//删除tag
+function delTag(){
+	var tag = $("input[name='tag_id']").is("input:checked");
+	if(tag == false){
+		alert("请选择需要删除标签");
+		return false;
+	} 
+	if (!confirm("确认要删除标签吗？")) {
+		return;
+	}
+	var options = {
+			url:ctx+"/shop/admin/tag/delete.do",
+			type:"post",
+			dataType:"json",
+			success:function(result){
+				if(result.result==1){
+					$.Loading.success("删除成功");
+					table.ajax.url(ctx+"/shop/admin/tag/list-json.do").load();
+				}
+			}
+	};
+	$("#tagform").ajaxSubmit(options);
+}
+</script>
+<#include '/admin/footer.html' >

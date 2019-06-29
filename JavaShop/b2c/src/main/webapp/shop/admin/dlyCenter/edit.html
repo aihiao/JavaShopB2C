@@ -1,0 +1,164 @@
+<#include '/admin/sonheader.html' >
+<#assign regionSelectDirective="com.enation.app.shop.front.tag.goods.other.regions.RegionSelectDirective"?new()>
+<script type="text/javascript" src="${ctx}/statics/e_tools/js/jquery.addressSelect-1.0.js"></script>
+<style>
+.input_text{width: 200px;}
+.left{width:410px;}
+.table-right{width:130px;float:none;height: 36px;}
+  .layui-form-pane .layui-input-block{
+    margin-left:153px;
+  }
+  .layui-input, .layui-textarea{
+    width:100%;
+  }
+  .layui-form-item{
+    display:inline-block;
+    width:48%;
+  }
+  .layui-form-item label{
+    width:121px!important;
+  }
+  .layui-form-pane .layui-input{
+    margin-left: -31px;
+  }
+  .app-address-title{
+     height: 35px!important;
+     line-height: 35px!important;
+     margin-left: -31px;
+  }
+  .app-address-body{
+    margin-top: 14px;
+  }
+  .app-address-title i{
+    top: 6px!important;
+  }
+
+</style>
+<div class="main">
+		<form id="dlyCenterEditForm" method="post" class="layui-form layui-form-pane" action="" enctype="multipart/form-data">
+		<input type="hidden" name="dly_center_id" value="${dlyCenter.dly_center_id}">
+		<div class="layui-form-item">
+    		<label class="layui-form-label">发货点名称：</label>
+    		<div class="layui-input-block">
+      			<input type="text"  name="name" id="name"  value="${dlyCenter.name!''}" maxlength="20" lay-verify="required" autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">发货人姓名：</label>
+    		<div class="layui-input-block">
+      			<input type="text"  id="url"  maxlength="20" name="uname" value="${dlyCenter.uname!''}" lay-verify="required" autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+		<div class="layui-form-item" >
+      		<label class="layui-form-label">地区</label>
+      		<div class="layui-input-block" id="selectAddress">
+      			<script type="text/javascript">
+      			<#if dlyCenter.province_id ??>
+				$(function() {
+					$('#selectAddress').addressSelect({
+						deData:[   
+					           ${dlyCenter.province_id!''},
+                               ${dlyCenter.city_id!''},
+                               ${dlyCenter.region_id!''},
+                               ${dlyCenter.town_id!''}
+				            ]
+				     	  });
+				      })
+	    	          <#else>
+			     $(function() {
+				     $('#selectAddress').addressSelect();
+			       })
+		       </#if>
+				</script>
+    		</div>
+  		</div>
+		<div class="layui-form-item">
+    		<label class="layui-form-label">手机：</label>
+    		<div class="layui-input-block">
+      			<input type="text"  name="cellphone" maxlength="11" value="${dlyCenter.cellphone!''}" lay-verify="phone" autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">邮编：</label>
+    		<div class="layui-input-block">
+      			<input type="text"  name="zip" maxlength="6"   value="${dlyCenter.zip!''}" onkeyup="this.value=this.value.replace(/\D/g,'')"  onafterpaste="this.value=this.value.replace(/\D/g,'')" lay-verify="required" autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+        <div class="layui-form-item">
+    		<label class="layui-form-label">电话：</label>
+    		<div class="layui-input-block">
+      			<input type="text"  name="phone" value="${dlyCenter.phone!''}" maxlength="15" lay-verify="required" autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		<div class="layui-form-item" style="width:68%;">
+    		<label class="layui-form-label">地址：</label>
+    		<div class="layui-input-block">
+      			<input type="text"  name="address" value="${dlyCenter.address!''}" maxlength="30" lay-verify="required" autocomplete="off" class="layui-input" style="display:inline-block;width:50%;">
+      			<input type="checkbox" id="is_default_dc"  name="is_default" title="默认地址" <#if dlyCenter.choose=='true'>checked</#if>></input>
+      			<input type="hidden" name="choose"  id="dlyCenterDisabled"/>
+    		</div>
+  		</div>
+  		<div class="layui-form-item layui-form-text" style="display:block;width:100%;">
+    		<label class="layui-form-label _left">文本域</label>
+    		<div class="layui-input-block _left" style="width:82%;">
+      			<textarea name="memo" placeholder="请输入内容" class="layui-textarea">${dlyCenter.memo!''}</textarea>
+    		</div>
+  		</div>
+  		
+  		
+  		<div class="layui-form-item" style="width:100%">
+  		<div class="layui-input-block">
+    		<a class="layui-btn" lay-submit="" type="submit" lay-filter="saveedit">保存修改</a>
+  		</div>
+	</div>
+		</form>
+</div>
+<script type="text/javascript">	
+var index = parent.layer.getFrameIndex(window.name);
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+    
+    
+      //修改保存
+        form.on('submit(saveedit)', function(data){
+        	 if( $("input[name='region_id']").val() == ""){
+      	    	parent.$.Loading.error("地区不能为空");
+      	    	return;
+      	    }
+        	if($("#is_default_dc").is(":checked")){
+    			$("#dlyCenterDisabled").val("true");
+    		}else{
+    			$("#dlyCenterDisabled").val("false");
+    		}
+    		var options = {
+    			url : ctx+"/shop/admin/dly-center/save-edit.do",
+    			type : "post",
+    			dataType : 'json',
+    			success : function(result) {
+    				if (result.result == 1) {
+    					parent.$.Loading.success(result.message);
+    					parent.layer.close(index);
+    					parent.table.ajax.url('${ctx}/shop/admin/dly-center/list-json.do').load();
+    					
+    				}
+    				if (result.result == 0) {
+    					parent.$.Loading.error(result.message);
+    				}
+    			},
+    			error : function(e) {
+    				parent.$.Loading.error("出现错误 ，请重试");
+    			}
+    		};
+    		$("#dlyCenterEditForm").ajaxSubmit(options);
+    		
+    		return false;
+        });
+});
+</script>
+
+
+

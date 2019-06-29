@@ -1,0 +1,124 @@
+<#include '/admin/header.html' > 
+<style>
+ .layui-btn{
+  background:#1E9FFF;
+  }
+</style>
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+            <h2>操作提示</h2>
+            <ul>
+                <li><span>·</span>团购地区关联团购活动可以选择区域</li>
+                <li><span>·</span>团购地区功能有新增，删除，修改</li>
+            </ul>
+        </div>
+        <!--按钮操作  -->
+        <div class="table_control">
+            <div class="table_opera">
+                <button type="button" id="addArea" title="新增" class="layui-btn layui-btn-primary" ><i class="icon iconfont icon-llalbumshopselectorcreate"></i></button>
+                <button type="button" id="delArea" title="删除" class="layui-btn layui-btn-primary " onclick="delArea()"><i class="icon iconfont icon-guanbi1"></i></button>
+                <button type="button" title="提示" class="layui-btn layui-btn-primary" id="explain"><i class="icon iconfont icon-tishi1"></i></button>
+            </div>
+        </div>
+   </div>
+   <!--表格区域  -->
+   <form id="areaform">
+    <table id="area" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+        <thead>
+          <tr>
+            <th><input type='checkbox'  class='btn-checkall fly-checkbox' id='selected-all'></th>
+            <th>地区名称</th>
+            <th>排序</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+    </table>
+   </form>
+</div>
+<script type="text/javascript">
+var table;
+$(function(){
+	 table = $('#area').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/group-buy-area/list-json.do',
+	    },
+	    columns: [ //定义列
+            {"data": function (obj) {
+                return '<input type="checkbox" name="area_id" class="fly-checkbox" value=' + obj.area_id + '>';
+            		}},
+	        {data: "area_name"},
+	        {data: "area_order"},
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small layui-btn-danger' id='editArea' onclick='edit_Area("+data.area_id+")'>修改</a>";			
+	       	}}
+	     ]
+	});
+	 
+	 
+	//添加地区
+	 $("#addArea").click(function(){
+	   	 layer.open({
+	            title:"添加地区",//标题
+	            maxmin :true,//右上角可否放大缩小
+	            type:2,//弹框的类型
+	            shade: [0.3, '#000'],//黑色背景
+	            shadeClose:false,//黑色背景是否可以点击关闭
+	            content:'${ctx}/shop/admin/group-buy-area/add.do',//内容的URL
+	            area:['400px','210px'],//弹框大小
+	            scrollbar: false//是否允许浏览器出现滚动条
+	        });
+		});
+});
+
+
+//修改
+function edit_Area(catid){
+	layer.open({
+        title:"修改地区",//标题
+        maxmin :true,//右上角可否放大缩小
+        type:2,//弹框的类型
+        shade: [0.3, '#000'],//黑色背景
+        shadeClose:false,//黑色背景是否可以点击关闭
+        content:'${ctx}/shop/admin/group-buy-area/edit.do?area_id='+catid,//内容的URL
+        area:['400px','210px'],//弹框大小
+        scrollbar: false//是否允许浏览器出现滚动条
+    });
+}
+
+//删除
+function delArea(){
+	var check = $("input[name='area_id']").is("input:checked");
+	if(check == false){
+		alert("请选择删除的活动地区");
+		return false;
+	} 
+	if (!confirm("确认要删除活动地区吗？")) {
+		return;
+	}
+   var options = {
+		   url:ctx+"/shop/admin/group-buy-area/batch-delete.do",
+			type:"post",
+			dataType:"json",
+			success:function(data){
+				if(data.result==1){
+					$.Loading.success(data.message)
+					table.ajax.url(ctx+"/shop/admin/group-buy-area/list-json.do").load();
+				}
+			}
+   };
+   $("#areaform").ajaxSubmit(options);
+}
+
+</script>

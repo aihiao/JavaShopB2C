@@ -1,0 +1,72 @@
+<#include '/admin/sonheader.html' >
+<style>
+.layui-input{
+	width:250px;
+}
+</style>
+<div class="admin-main">
+    <!--表单区域  -->
+	<form id="editCat" class="layui-form layui-form-pane" style="padding-top:10px">
+	<input type="hidden" name="catid" value="${groupBuyCat.catid}" >
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">分类名称:</label>
+    		<div class="layui-input-block">
+      			<input type="text" id="name" name="cat_name" maxlength="20" value="${groupBuyCat.cat_name}" lay-verify="act_name" autocomplete="off" class="layui-input" style="display:inline;">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">排序：</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="cat_order" maxlength="3" value="${groupBuyCat.cat_order}" lay-verify="required|number" autocomplete="off" class="layui-input" style="display:inline;">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-layer-btn layui-layer-btn-" style="padding:8px 12px;z-index:1000; position: fixed;left: 1px;width: 96%;height: 30px; background:rgba(230,230,230,0.8)"> 
+	  			<a class="layui-layer-btn0" type="submit" style="margin: 0px 0px 0px 100px;" lay-submit="" lay-filter="edit_Cat">保存</a>
+  			</div>
+  	</form>
+</div>
+<script type="text/javascript">
+var index = parent.layer.getFrameIndex(window.name);
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+    
+    form.verify({
+    	act_name: function(value){
+        	if($.trim(value)==""){
+          		return '请输入分类名称';
+        	}
+      	}
+    });
+   
+    //监听提交
+    form.on('submit(edit_Cat)', function(data){
+    	var options = {
+    			url: ctx+"/shop/admin/group-buy-cat/save-edit.do",
+    			type: "post",
+    			dataType: "json",
+    			success:function(result){
+    				if(result.result==1){
+    					$.Loading.success("修改成功");
+    					parent.layer.close(index);
+    					parent.table.ajax.reload();
+    				}
+    				if (data.result == 0) {
+    					$.Loading.error(data.message);
+    				}
+    			},
+    			error : function(e) {
+    				parent.$.Loading.error("出现错误 ，请重试");
+    				$.Loading.error(result.message);
+    			}
+    	};
+   		$("#editCat").ajaxSubmit(options);
+       return false;
+    });
+});
+</script>

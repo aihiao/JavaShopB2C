@@ -1,0 +1,175 @@
+<#include '/admin/header.html' >
+<style>
+  .layui-input{
+    width: 75%;
+  }
+  .layui-form-pane .layui-form-label{
+  margin-left:10px;
+  }
+</style>
+<div class="main">
+    <!--表单区域  -->
+	<form id="editAdminForm" class="layui-form layui-form-pane" action="" enctype="multipart/form-data">
+	<input type="hidden" name="userid" value="${adminUser.userid }" />
+	
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">用户名：</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="username"  maxlength="12" value="${adminUser.username!'' }" lay-verify="required" autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		<div class="layui-form-item">
+  			<input type="checkbox" name="updatePwd" id="updatePwd" lay-filter="updatePwd" value="yes" title="同时修改密码：">
+  		</div>
+  		
+  		<div class="layui-form-item" id="pwdtr">
+    		<label class="layui-form-label">密码：</label>
+    		<div class="layui-input-block">
+      			<input type="password" name="newPassword" id="pwd" maxlength="20"  autocomplete="off" class="layui-input" onkeyup="this.value=this.value.replace(/^ +| +$/g,'')">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item" id="repwdtr">
+    		<label class="layui-form-label">确认密码：</label>
+    		<div class="layui-input-block">
+      			<input type="password" type="password" id="repwd"   maxlength="20"  autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">类型：</label>
+    		<div class="layui-input-block">
+      			<input type="radio" name="founder" value="0" id="notSuperChk" lay-filter="founder" title="普通管理员" <#if adminUser.founder==0> checked="checked"</#if>>
+      			<input type="radio" name="founder" value="1" id="superChk" lay-filter="founder" title="超级管理员" <#if adminUser.founder==1> checked="checked"</#if>>
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item" id="roletr">
+    		<label class="layui-form-label">角色：</label>
+    		<div class="layui-input-block" id="rolesbox">
+      			<ul style="width:100% ;margin-left:10px;" >
+					<#list roleList as role>
+					<li style="width:40%;display:block" id="li_${role.roleid!''}">
+						<input autocomplete="off" type="checkbox" name="roleids" value="${role.roleid!''}"
+							<#list userRoles as userrele>
+								<#if userrele.roleid ==role.roleid>
+								checked="checked"
+								</#if> 
+							</#list>>
+						${role.rolename }&nbsp;
+					</li>
+					</#list>
+				</ul>
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">状态：</label>
+    		<div class="layui-input-block">
+      			<input type="radio" name="state" value="1"  title="启用" <#if adminUser.state==1> checked=true </#if>>
+      			<input type="radio" name="state" value="0"  title="禁用" <#if adminUser.state==0> checked=true </#if>>
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">姓名：</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="realname" lay-verify="required" maxlength="12" value="${adminUser.realname!'' }" autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">编号：</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="userno"  value="${adminUser.userno!''}" onkeyup='this.value=this.value.replace(/\D/gi,"")' maxlength="32"  autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">部门：</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="userdept" value="${adminUser.userdept!'' }"  maxlength="32"  autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label class="layui-form-label">备注：</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="remark" maxlength="200" value="${adminUser.remark!'' }" autocomplete="off" class="layui-input">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-layer-btn layui-layer-btn-" style="padding:8px 12px;z-index:1000;left: 1px;width: 97%;height: 40px; background:rgba(230,230,230,0.8)"> 
+  			<a style="margin: 0px" class="layui-layer-btn0" type="submit" lay-submit="" lay-filter="edit_user_admin">保存</a>
+  			<button class="layui-btn layui-btn-primary layui-btn-small" id="reset" type="reset" style="width: 60px;">还原</button>
+  		</div>
+  	</form>
+</div>
+<script>
+var index = parent.layer.getFrameIndex(window.name);
+$(function(){
+	
+	/*  页面一加载就先触发下还原按钮 */
+	$("#reset").trigger('click');
+	
+	$("#notSuperChk").click(function(){
+		if(this.checked)
+		$("#roletr").show();
+	});
+	$("#superChk").click(function(){
+		if(this.checked)
+		$("#roletr").hide();
+	});	
+	var val=$('input:radio[name="founder"]:checked').val();
+	if(val==1){
+	    $("#roletr").hide();
+	}else {
+		$("#roletr").show();
+	}
+});
+layui.use(['form', 'layedit', 'laydate'], function(){
+	var form = layui.form(),
+    layedit = layui.layedit,
+    laydate = layui.laydate;
+    
+    form.on('radio(founder)', function(data){
+    	  if(data.value==1){
+    		  $("#roletr").hide();
+    	  }else {
+    		  $("#roletr").show();
+			}
+    	});
+    //初始化隐藏
+    $("#pwdtr").hide();
+	$("#repwdtr").hide();
+	//CheckBox切换状态控制显示隐藏
+    form.on('checkbox(updatePwd)', function(data){
+		  if(data.elem.checked==true){
+			  $("#pwdtr").show();
+			  $("#repwdtr").show();
+		  }else{
+			  $("#pwdtr").hide();
+			  $("#repwdtr").hide(); 
+		  }
+		});
+   
+    form.on('submit(edit_user_admin)', function(data){
+    	var options = {
+   			url:ctx+"/core/admin/userAdmin/edit-save.do",
+   			type:"post",
+   			dataType:"json",
+   			success:function(data){
+   				if(data.result==1){	
+   					parent.$.Loading.success(data.message);
+   					parent.layer.close(index); //再执行关闭        
+   					parent.table.ajax.url(ctx+"/core/admin/userAdmin/list-json.do").load();
+   				}else{
+   					parent.$.Loading.error(data.message);
+   				}
+   			}
+   		};
+   		$("#editAdminForm").ajaxSubmit(options);
+       return false;
+    });
+});
+</script>

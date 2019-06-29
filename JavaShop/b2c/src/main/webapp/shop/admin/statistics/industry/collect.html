@@ -1,0 +1,87 @@
+<#include '/admin/header.html' >
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <!-- <div class="page_explain">
+            <ul>
+                <li>1</li>
+                <li>2</li>
+                <li>3</li>
+            </ul>
+        </div> -->
+        <!--按钮操作  -->
+        <div class="table_control">
+            <!-- <div class="table_opera">
+                <button type="button" class="layui-btn layui-btn-primary " title="提示" id="explain"><i class="icon iconfont icon-tishi1"></i></button>
+            </div> -->
+            <div class="table_search">
+            <span>选择分类</span>
+            <select id="type" onchange="searchCat()"> 
+				<#if cats??> 
+						<#list cats as cat>
+							<option value="${cat.cat_id}"<#if cat_id==cat.cat_id> selected="selected"</#if>>${cat.name}</option>
+						</#list>
+				</#if>
+				</select>
+				
+            </div>
+        </div>
+    </div>
+    
+   <!--表格区域  -->
+   <form id="brandform">
+    <table id="orderdata" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+        <thead>
+          <tr>
+            <th>名称</th>
+            <th>平均价格</th>
+            <th>有销量商品数</th>
+            <th>销量</th>
+            <th>销售额</th>
+            <th>商品总数</th>
+            <th>无销量商品数</th>
+          </tr>
+        </thead>
+    </table>
+    <!--传值等操作(暂定)  -->
+    <div id="addBrand" ></div>
+   </form>
+</div>
+
+<!--js区域  -->
+<script>
+$(function(){
+	
+	var table = $('#orderdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/industryStatistics/collect-data.do?cat_id=${cat_id}',
+	    },
+	    columns: [ //定义列
+	        {data: "name"},
+	        {data: "avgPrice"},
+	        {data: "salesGoodsNum"},
+	        {data: "sales"},
+	        {data: "saleroom"},
+	        {data: "countGoods"},
+	        {data: "residue"}
+	     ]
+	});
+});
+
+//分类选择搜索
+function searchCat(){ 
+	window.location.href="${ctx}/shop/admin/industryStatistics/show-collect.do?cat_id="+$("#type").val(); 
+} 
+
+</script>
+<#include '/admin/footer.html' >

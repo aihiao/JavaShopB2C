@@ -1,0 +1,523 @@
+<#include '/admin/header.html' >
+<#assign regionSelectDirective="com.enation.app.shop.front.tag.goods.other.regions.RegionSelectDirective"?new()>
+<style>
+ td .layui-btn{
+  background:#1E9FFF;
+  }
+  #start_time_one{
+  height:25px;
+  line-height:25px;
+  
+  }
+  #end_time_one{
+  height:25px;
+  line-height:25px;
+  }
+  ._inline{
+  margin-right:16px!important;
+  margin-top:5px;
+  height:25px;
+  }
+  ._inline input{
+  height:25px;
+  line-height:25px;
+  }
+  .search_conditions{
+   display:block
+}
+.page_explain ul li{
+height:40px;
+}
+.selectadd{
+height:23px;
+line-height:23px;
+border:1px solid #ccc;
+margin-top:8px;
+}
+#province_id{
+height:23px;
+line-height:23px;
+border:1px solid #ccc;
+margin-top:8px;
+}
+#city_id{
+height:23px;
+line-height:23px;
+border:1px solid #ccc;
+margin-top:8px;
+}
+#region_id{
+height:23px;
+line-height:23px;
+border:1px solid #ccc;
+margin-top:8px;
+}
+</style>
+<div class="admin-main">
+	<div>
+		<!--提示区域  -->
+		<div class="page_explain">
+			<h2>操作提示</h2>
+            <ul>
+                <li><span>·</span>商城所有会员，都会显示在列表中，您可以对其进行添加，删除，和修改。</li>
+                <li><span>·</span>对会员进行添加完毕之后，会自动跳转到当前会员的修改页，您可以直接修改，保存添加，或者关闭修改页面</li>
+                <li><span>·</span>对列表中的会员进行修改操作的时候，可以对会员的其他信息进行查看和相应修改，比如：会员基本信息、他的订单、他的评论、收货地址、等级积分等等..</li>
+            </ul>
+		</div>
+		<!--按钮操作  -->
+		<div class="table_control">
+			<div class="table_opera">
+				<button type="button" class="layui-btn layui-btn-primary "
+					title="添加"
+					onclick='newTab("会员添加","${ctx}/shop/admin/member/add-member.do");'>
+					<i class="icon iconfont icon-llalbumshopselectorcreate"></i>
+				</button>
+				<button type="button" class="layui-btn layui-btn-primary" title="删除"
+					onclick="delMemeber()">
+					<i class="icon iconfont icon-guanbi1"></i>
+				</button>
+				<button type="button" class="layui-btn layui-btn-primary" title="提示"
+					id="explain">
+					<i class="icon iconfont icon-tishi1"></i>
+				</button>
+			</div>
+
+			<!--搜索区域  -->
+			<div class="table_search">
+				<input type="text" id="_search" placeholder="请输入用户名,姓名,手机号" style="height:25px;">
+				<button type="button"
+					class="layui-btn layui-btn-primary layui-btn-small"
+					id="_searchMember">
+					<i class="layui-icon">&#xe615;</i>
+				</button>
+				<button type="button"
+					class="layui-btn layui-btn-primary layui-btn-small"
+					id="high_search">高级搜索</button>
+				<!--高级搜索区域  -->
+				<div class="high_searchcontent">
+					<div class="content_title">
+						<span>高级搜索</span>
+					</div>
+					<form id="search_form" action="post">
+						<!-- <input id="Advanced" name="Advanced" type="hidden" value="0" /> -->
+						<div class="layui-form-item">
+							<label class="layui-form-label">用户名:</label>
+							<div class="layui-input-block">
+								<input type="text" id="uname" lay-verify="" autocomplete="off"
+									placeholder="请输入用户名" class="layui-input">
+							</div>
+						</div>
+						<div class="layui-form-item">
+							<label class="layui-form-label">手机号</label>
+							<div class="layui-input-block">
+								<input type="text" id="mobile" lay-verify="" maxlength="11"
+									autocomplete="off" placeholder="请输入手机号" class="layui-input">
+							</div>
+						</div>
+
+						<div class="layui-form-item">
+							<label class="layui-form-label">会员等级</label>
+							<div class="layui-input-block">
+								<select id="lv_id" name="member.lv_id" lay-filter="" class="selectadd">
+									<option value="0">--请选择等级--</option> <#if lvlist??> <#list
+									lvlist as lv>
+									<option value="${lv.lv_id }">${lv.name }</option> </#list>
+									</#if>
+								</select>
+							</div>
+						</div>
+
+						<div class="layui-form-item">
+							<label class="layui-form-label">性别</label>
+							<div class="layui-input-block">
+								<select id="sex" lay-filter="" class="selectadd">
+									<option value="">请选择</option>
+									<option value="2">全部</option>
+									<option value="1">男</option>
+									<option value="0">女</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="layui-form-item">
+							<label class="layui-form-label">电子邮件</label>
+							<div class="layui-input-block">
+								<input type="text" id="email" name="email" lay-verify=""
+									autocomplete="off" class="layui-input">
+							</div>
+						</div>
+
+						<div class="layui-form-item" style="width: 100%;">
+							<label class="layui-form-label">注册时间</label>
+							<div class="layui-input-inline">
+								<input class="layui-input" placeholder="开始日" id="start_time">
+							</div>
+							<div class="layui-input-inline">
+								<input class="layui-input" placeholder="截止日" id="end_time">
+							</div>
+						</div>
+						<div class="layui-form-item" style="width:90%">
+							<label class="layui-form-label">城市</label>
+							<div class="layui-input-block">
+							<@regionSelectDirective  province_id="${province_id!''}" city_id="${city_id!''}" region_id="${region_id!''}" town_id="${town_id!''}"/>
+							</div>
+						</div>
+						<ul>
+							<li class="reset">
+								<button type="reset" id="reset_btn"
+									class="layui-btn  layui-btn-primary">重置</button>
+							</li>
+							<li class="submit">
+								<button type="button" id="submit_btn"
+									class="layui-btn layui-btn-primary" lay-submit=""
+									lay-filter="highsearch">开始搜索</button>
+							</li>
+						</ul>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--高级搜索生成区域  -->
+	 <div class="high_search">
+    	<form action="" class="layui-form layui-form-one" action="">
+   		</form> 	
+    </div>
+    
+     <!-- //高级搜索区克隆区域 -->
+      <div class="kelong" style="display:none;">
+   		<ul  class="search_conditions " style="width:98%; ">
+ 			<li>
+ 				 <div class="layui-form-item _select">
+                       <label class="layui-form-label  _label" >用户名:</label>
+	                 <div class="layui-input-block _layui-input-block">
+	                       <input type="text" id="uname_one" readonly="true"  class="layui-input">
+	                 </div>
+                  </div>
+                  <span>
+	                 	<a class="closeSelf" href="javascript:void (0)">
+	                 		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                	</a>
+                  </span>
+ 			</li>
+			<li>
+ 				 <div class="layui-form-item _select">
+                       <label class="layui-form-label  _label" >手机号:</label>
+	                  <div class="layui-input-block _layui-input-block">
+	                        <input type="text" id="mobile_one"  readonly="true" class="layui-input">
+	                  </div>
+                  </div>
+                  <span>
+	                  	<a class="closeSelf" href="javascript:void (0)">
+	                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                 	</a>
+                  </span>
+ 			</li>
+ 		
+ 				<li>
+ 			    <div class="layui-form-item  _select">
+                     <label class="layui-form-label _label">会员等级</label>
+                     <div class="layui-input-block _layui-input-block">
+                       	<input type="text" id="lv_id_one" readonly="true"  class="layui-input">
+                     </div>
+                </div>
+           	 	<span>
+	               	<a class="closeSelf" href="javascript:void (0)">
+	               		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	              	</a>
+               </span>
+ 			</li>
+ 			
+ 		
+ 			
+ 				<li>
+ 			    <div class="layui-form-item  _select">
+                    <label class="layui-form-label _label">性别</label>
+	                    <div class="layui-input-block _layui-input-block">
+	                      <input type="text" id="sex_one"  readonly="true" class="layui-input">
+	                    </div>
+                </div>
+           	 	<span>
+	               	<a class="closeSelf" href="javascript:void (0)">
+	               		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	              	</a>
+               </span>
+ 			</li>
+			<li>
+			 	<div class="layui-form-item _select">
+                     <label class="layui-form-label  _label" >电子邮件:</label>
+	                <div class="layui-input-block _layui-input-block">
+	                      <input type="text" id="email_one" readonly="true" class="layui-input">
+	                </div>
+                </div>
+                <span>
+                	<a class="closeSelf" href="javascript:void (0)">
+                		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+               		</a>
+                </span>
+			</li>
+			<li>
+			    <div class="layui-form-item  ">
+               		<label class="layui-form-label _select">注册时间</label>
+                     <div class="layui-input-inline _inline" >
+                       <input type="text" id="start_time_one" readonly="true" class="layui-input">
+                     </div>
+                      <div class="layui-input-inline _inline" >
+                     	 <input type="text" id="end_time_one" readonly="true"   class="layui-input">
+                     </div>
+               	</div>
+            	 	<span style="float:right;margin-top:-43px;">
+		               	<a class="closeSelf" href="javascript:void (0)">
+		               		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+		              	</a>
+                </span>
+			</li>
+			<li>
+ 			    <div class="layui-form-item ">
+                    <label class="layui-form-label _select">城市</label>
+	                <div class="layui-input-inline _inline">
+	                  <input type="text" id="cty_one" readonly="true"  class="layui-input">
+	                </div>
+	                 <div class="layui-input-inline _inline">
+	                  <input type="text" id="cty_two" readonly="true"  class="layui-input">
+	                </div>
+	                 <div class="layui-input-inline _inline">
+	                  <input type="text" id="cty_three" readonly="true"  class="layui-input">
+	                </div>
+               	 </div>
+              	 	<span style="float:right;margin-top:-43px;">
+	                 	<a class="closeSelf" href="javascript:void (0)">
+	                 		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                	</a>
+                  </span>
+ 			</li>
+ 		</ul>
+   </div>
+	<!--表格区域  -->
+	<form id="memberform">
+		<table id="memberdata" class="layui-table site-table table-hover"
+			width="100%" lay-skin="line">
+			<thead>
+				<tr>
+					<th><input type='checkbox' class='btn-checkall fly-checkbox'
+						id='selected-all'></th>
+					<th>用户名</th>
+					<th>手机</th>
+					<#if is_lvmember == 1>
+						<th>会员等级</th>
+					</#if>
+					<th>电子邮件</th>
+					<th>注册时间</th>
+					<th>上次登录日期</th>
+					<th>本月登录次数</th>
+					<th>性别</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+		</table>
+		<div id="addBrand"></div>
+	</form>
+</div>
+
+<!--js区域  -->
+<script>
+var index = parent.layer.getFrameIndex(window.name);
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+    
+	form.on('submit(highsearch)', function(data){
+		 $(".layui-form-one>ul").remove();
+			$(".high_search").css("display","block");
+			var kelo=$(".kelong ul").clone();
+			kelo.appendTo($(".high_search form"));
+			/* 赋值 */
+			var gjuname=$("#uname").val();
+			$("#uname_one").val(gjuname);
+			var gjmob=$("#mobile").val();
+			$("#mobile_one").val(gjmob);
+			 var gjlv=$("#lv_id").find("option:selected").text();
+		       $("#lv_id_one").val(gjlv);
+		       var gjsex=$("#sex").find("option:selected").text();
+		       $("#sex_one").val(gjsex);
+		       var gjpro=$("#province_id").find("option:selected").text();
+		       $("#cty_one").val(gjpro);
+		       var gjcty=$("#city_id").find("option:selected").text();
+		       $("#cty_two").val(gjcty);
+		       var gjreg=$("#region_id").find("option:selected").text();
+		       $("#cty_three").val(gjreg);
+			var gjemail=$("#email").val();
+			$("#email_one").val(gjemail);
+			
+			 var gjstart=$("#start_time").val();
+		       $("#start_time_one").val(gjstart);
+		       var gjend=$("#end_time").val();
+		       $("#end_time_one").val(gjend);
+			$(".closeSelf").click(function(){
+				$(this).parent().parent().detach();
+				})
+	});
+});
+
+var table;
+$(function(){
+	//高级搜索框的显示隐藏
+    $("#high_search").on("click",function(event){
+    	event.stopPropagation();
+     	event.stopImmediatePropagation();
+        $(".high_searchcontent").toggle();
+    })
+	
+	table = $('#memberdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/member/member-list-json.do',
+	    },
+	    columns: [ //定义列
+            {"data": function (obj) {
+                return '<input type="checkbox" name="member_id" class="fly-checkbox" value=' + obj.member_id + '>';
+            		}},
+	        {data: "uname"},
+	        {data: "mobile"},
+	        <#if is_lvmember == 1>
+	        {data: "lv_name"},
+			</#if>
+	        {data: "email"},
+	        {data: null,"render":function(data,type,row){
+	        	return getFormatDateByLong(data.regtime, "yyyy-MM-dd hh:mm:ss");
+	        }},
+	        {data: null,"render":function(data,type,row){
+	        	return getFormatDateByLong(data.lastlogin, "yyyy-MM-dd hh:mm:ss");
+	        }},
+	        {data: "logincount"},
+	        {data: null,"render":function(data,type,row){
+	        	if(data.sex==0){
+	    			return "女";
+	    		}else if(data.sex==1){
+	    			return "男";
+	        }else{
+	        	return "";
+	        }
+	        }},
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small _aa' name='change_btn' onclick='newTab(\""
+				+ row.uname
+				+ "-信息修改\",\"${ctx}/shop/admin/member/detail.do?memberId="
+				+ row.member_id + "\")' >操作</a>";	//获取值:data["brand_id"]
+	       	}}
+	     ]
+	});
+	
+	//普通搜索
+	$("#_searchMember").click(function(){
+		_searchMember(table);
+	});
+	
+	
+	$("#submit_btn").click(function(){
+		highSearchOrder(table);
+	});
+	
+	//layui日期控件配置
+	layui.use('laydate', function(){
+		  var laydate = layui.laydate;
+		  
+		  var start = {
+		    min: '2014-01-01 23:59:59',
+		    max: '2099-06-16 23:59:59',
+		    istoday: false,
+		    choose: function(datas){
+		      end.min = datas; //开始日选好后，重置结束日的最小日期
+		      end.start = datas //将结束日的初始值设定为开始日
+		    }
+		  };
+		  
+		  var end = {
+		    min: '2014-01-01 23:59:59',
+		    max: '2099-06-16 23:59:59',
+		    istoday: false,
+		    choose: function(datas){
+		      start.max = datas; //结束日选好后，重置开始日的最大日期
+		    }
+		  };
+		  
+		  document.getElementById('start_time').onclick = function(){
+		    start.elem = this;
+		    laydate(start);
+		  }
+		  document.getElementById('end_time').onclick = function(){
+		    end.elem = this
+		    laydate(end);
+		  }
+		  
+		});
+});
+
+function _searchMember(table){
+	var keyword = $("#_search").val();
+	var param = "keyword="+keyword+"&stype="+0;
+	var url = table.ajax.url("${ctx}/shop/admin/member/member-list-json.do?"+param);
+	url.load();
+}
+
+//高级搜索
+function highSearchOrder(table){
+	var start_time = $("#start_time").val();
+	var end_time = $('#end_time').val();
+	var uname = $("#uname").val();
+	var mobile = $("#mobile").val();
+	var lvId = $("#lv_id").val();
+	var sex = $("#sex").val();
+	var email = $("#email").val();
+	var province_id = $("#province_id").val();
+	var city_id = $("#city_id").val();
+	var region_id = $("#region_id").val(); 
+	if (email.length != 0) {
+		var reg = /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/;
+		if (!reg.test(email)) {
+			alert("对不起，您输入的邮箱格式不正确!");//请将“字符串类型”要换成你要验证的那个属性名称！    
+			return;
+		}
+	}
+	var param = "start_time="+start_time+"&end_time="+end_time+"&uname="+uname+"&mobile="+mobile+"&lvId="+lvId+"&sex="+sex+"&email="+email+"&province_id="+province_id+"&city_id="+city_id+"&region_id="+region_id;
+	var url = table.ajax.url(ctx+"/shop/admin/member/member-list-json.do?"+param);
+	url.load();
+}
+
+//删除
+function delMemeber(){
+	var check = $("input[name='member_id']").is("input:checked");
+	if(check == false){
+		alert("请选择放入回收站会员！！！");
+		return false;
+	}
+	if(!confirm("确认要把这些会员放入回收站吗？")){
+		return;
+	}
+	var options = {
+			url:ctx+"/shop/admin/member/delete.do",
+			type:"post",
+			dataType:"json",
+			success:function(data){
+				if(data.result==1){
+					$.Loading.success(data.message);
+					table.ajax.url(ctx+"/shop/admin/member/member-list-json.do").load();
+				}
+			}
+	};
+	$("#memberform").ajaxSubmit(options);
+}
+</script>
+<#include '/admin/footer.html' >

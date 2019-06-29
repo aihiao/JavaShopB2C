@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.enation.app.javashop</groupId>
+		<artifactId>javashop-parent</artifactId>
+		<version>6.3.1</version>
+	</parent>
+	<artifactId>b2c</artifactId>
+	<packaging>war</packaging>
+	<name>b2c Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+
+
+	<dependencies>
+
+		<!-- Javashop 工程依赖 -->
+		<dependency>
+			<groupId>com.enation.app.javashop</groupId>
+			<artifactId>core</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.enation.app.javashop</groupId>
+			<artifactId>shop-core</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.enation.app.javashop</groupId>
+			<artifactId>cms-core</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+
+		<!-- 团购 -->
+		<dependency>
+			<groupId>com.enation.app.javashop</groupId>
+			<artifactId>groupbuy</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+
+		<!-- 短信网关 -->
+		<dependency>
+			<groupId>com.enation.app.javashop</groupId>
+			<artifactId>zt-sms</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+		<!-- 微信组件 -->
+		<dependency>
+			<groupId>com.enation.app.javashop</groupId>
+			<artifactId>weixin</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.enation.app.javashop</groupId>
+			<artifactId>weixin-applet</artifactId>
+			<version>6.3.1</version>
+		</dependency>
+		<!-- servlet -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+	<build>
+
+		<resources>
+
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.xml</include>
+					<include>**/*.css</include>
+					<include>**/*.html</include>
+				</includes>
+			</resource>
+
+		</resources>
+
+	</build>
+</project>

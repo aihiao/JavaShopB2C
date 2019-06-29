@@ -1,0 +1,93 @@
+<style>
+.layui-form-item{
+margin-left:15px;
+margin-top:10px;
+}
+</style>
+<div class="main">
+    <!--表单区域  -->
+    <script type="text/javascript" src="${ctx}/adminthemes/version3/plugins/layui/lay/modules/form.js"></script>
+	<form id="addForm" class="layui-form layui-form-pane" enctype="multipart/form-data">
+  		<div class="layui-form-item">
+    		<label  style="width: 25%" class="layui-form-label" for="name">分类名称</label>
+    		<div class="layui-input-block">
+      			<input type="text" name="name" style="width: 77%" class="layui-input" id="name" lay-verify="required" autocomplete="off" maxlength="15">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label style="width: 25%" class="layui-form-label">分类图片</label>
+    		<div class="layui-input-block">
+      			<input style="width: 60%;margin: 0 0 0 100px;" type="file" id="file" name="file" autocomplete="off" class="_upfile" >
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label style="width: 25%"  class="layui-form-label ">是否为顶级分类</label>
+    		<div class="layui-input-block">
+                <input type="radio" name="cattype" lay-filter="cattype" value="1" title="是">
+                <input type="radio" name="cattype" lay-filter="cattype" value="0" checked="checked" title="否">
+    		</div>
+  		</div>
+  		
+  		<div  class="layui-form-item  discode">
+    		<label style="width: 25%"  class="layui-form-label">上级分类</label>
+    		<div class="layui-input-block">
+      			<input  style="width: 77%" type="text" name="parent_id" id="cat_parent" autocomplete="off" placeholder="选择上级分类" class="layui-input">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label style="width: 25%"  class="layui-form-label">商品类型</label>
+    		<div class="layui-input-block">
+      			<input  style="width: 77%" type="text" name="type_id" id="goods_type" placeholder="选择商品类型" autocomplete="off"  class="layui-input">
+    		</div>
+  		</div>
+  		
+  		<div class="layui-form-item">
+    		<label style="width: 25%"  class="layui-form-label">排序</label>
+    		<div class="layui-input-block">
+      			<input  style="width: 77%" type="text" id="sort" name="cat_order" autocomplete="off"  class="layui-input" value="0" maxlength="5">
+    		</div>
+  		</div>
+
+		<div class="layui-form-item">
+			<label style="width: 25%"  class="layui-form-label">列表中显示</label>
+			<div class="layui-input-block">
+				<input type="radio" name="whether" lay-filter="whether" value="1"  title="是">
+				<input type="radio" name="whether" lay-filter="whether" value="0" checked="checked" title="否">
+				<input type="hidden" name="reveal" id="reveal" value="">
+			</div>
+		</div>
+
+ 
+  	</form>
+    
+    
+</div>
+
+    <script>
+        $("#reveal").val(0);
+    layui.use(['form', 'layedit', 'laydate'], function(){
+	    var form = layui.form()
+	        ,layer = layui.layer
+	        ,layedit = layui.layedit
+	        ,laydate = layui.laydate;
+
+    	form.on('radio(cattype)', function(data){
+  		  if(data.value==1){
+  		    	$(".discode").hide();
+  		    }else{
+  		    	$(".discode").show();
+  		    }
+  		});
+    	form.on('radio(whether)', function(data){
+  		  if(data.value==1){
+              $("#reveal").val(data.value);
+  		    }else{
+              $("#reveal").val(data.value);
+		    }
+  		});
+    });
+
+     </script>

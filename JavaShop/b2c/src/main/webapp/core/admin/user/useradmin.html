@@ -1,0 +1,121 @@
+<#include '/admin/header.html' >
+<#assign dateFormat="com.enation.framework.directive.DateformateDirective"?new()>
+<style>
+.page_explain ul li {
+height:50px;
+}
+</style>
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+            <h2>操作提示</h2>
+            <ul class="tishi">
+                <li><span>.</span>管理员的作用：对后台的管理员进行划分，让每个管理员都只能看到自己需要管理的功能，而不能对其他管理员管理的功能进行操作，以便不会因为互相操作，带来不必要的麻烦，同时提高平台的运作效率。</li>
+                <li><span>.</span>新增具有权限的管理员步骤：首先“管理员管理”新增一个管理员-然后“角色管理”对这个管理员赋予总的权限统称-最后“权限点管理”中对这个总的权限统称赋予具体的权限。</li>
+				
+               
+            </ul>
+        </div>
+        <!--按钮操作  -->
+        <div class="table_control">
+            <div class="table_opera">
+                <button type="button" id="add_useradmin_button" class="layui-btn layui-btn-primary " title="添加"><i class="icon iconfont icon-llalbumshopselectorcreate"></i></button>
+                <button type="button" class="layui-btn layui-btn-primary " title="提示" id="explain"><i class="icon iconfont icon-tishi1"></i></button>
+            </div>
+        </div>
+    </div>
+    
+   <!--表格区域  -->
+   <form id="useradminForm">
+    <table id="useradmindata" class="layui-table site-table table-hover" width="100%" lay-skin="line">
+        <thead>
+          <tr>
+            <th>用户名</th>
+            <th>姓名</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+    </table>
+    <!--传值等操作(暂时)  -->
+    <div id="addBrand" ></div>
+   </form>
+</div>
+
+<!--js区域  -->
+<script>
+var table;
+$(function(){
+	
+	table = $('#useradmindata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/core/admin/userAdmin/list-json.do',
+	    },
+	    columns: [ //定义列
+	        {data: "username"},
+	        {data: "realname"},
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small layui-btn-normal' onclick='edit("+data["userid"]+")'>修改</a>"+"&nbsp"+"<a class='layui-btn layui-btn-small layui-btn-danger' onclick='del("+data["userid"]+")'>删除</a>";		//获取值:data["brand_id"]
+	       	}}
+	     ]
+	});
+	
+	$("#add_useradmin_button").click(function(){
+	   	 layer.open({
+	            title:"添加管理员",//标题
+	            maxmin :true,//右上角可否放大缩小
+	            type:2,//弹框的类型
+	            shade: [0.3, '#000'],//黑色背景
+	            shadeClose:false,//黑色背景是否可以点击关闭
+	            content:"${ctx}/core/admin/userAdmin/add.do",//内容的URL
+	            area:['660px','540px'],//弹框大小
+	            scrollbar: false//是否允许浏览器出现滚动条
+	        });
+		});
+});
+
+//修改
+function edit(userId){
+	layer.open({
+        title:"修改管理员",//标题
+        maxmin :true,//右上角可否放大缩小
+        type:2,//弹框的类型
+        shade: [0.3, '#000'],//黑色背景
+        shadeClose:false,//黑色背景是否可以点击关闭
+        content:ctx+"/core/admin/userAdmin/edit.do?id="+userId,//内容的URL
+        area:['660px','540px'],//弹框大小
+        scrollbar: false//是否允许浏览器出现滚动条
+    });
+}
+
+//删除
+function del(id){
+	if(!confirm("确认要删除管理员吗？")){
+		return;
+	}
+	$.ajax({
+		url:ctx+"/core/admin/userAdmin/delete.do?id="+id,
+		type:"post",
+		dataType:"json",
+		success:function(data){
+			if(data.result == 1){
+				$.Loading.success(data.message);
+				table.ajax.url(ctx+"/core/admin/userAdmin/list-json.do").load();
+			}else{
+				$.Loading.error(data.message);
+			}
+		}
+	});
+}
+</script>
+<#include '/admin/footer.html' >

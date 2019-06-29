@@ -1,0 +1,524 @@
+<#include '/admin/header.html' >
+<#assign dateFormat="com.enation.framework.directive.DateformateDirective"?new()>
+<style>
+
+ #start_time_one{
+  height:25px;
+  }
+  #end_time_one{
+  height:25px;
+  }
+  ._inline{
+  margin-right:16px!important;
+  margin-top:5px;
+  height:25px;
+  }
+  .search_conditions{
+display:block
+}
+</style>
+<script language="javascript" src="${ctx}/adminthemes/new/js/CLodopFuncs.js"></script>
+<div  class="admin-main">
+   <div>
+        <!--提示区域  -->
+        <div class="page_explain">
+            <h2>操作提示</h2>
+            <ul>
+                <li><span>·</span>该列表中，只会显示待发货的订单，可以点击操作其进行其他操作，但是已发货后，该订单便不会出现在此列表。</li>
+                <li><span>·</span>点击填写发货单，可以保存，也可以填写完之后直接发货，功能和订单详情页效果一样。</li>
+            </ul>
+        </div>
+        <!--按钮操作  -->
+        <div class="table_control">
+            <div class="table_opera">
+                <button type="button" class="layui-btn layui-btn-primary " title="填写快递单号" id="listForExpressNo"><i class="icon iconfont icon-write"></i></button>
+                <button type="button" class="layui-btn layui-btn-primary " title="发货" id="shipBtn"><i class=" icon iconfont icon-deliver"></i></button>
+                <button type="button" class="layui-btn layui-btn-primary " title="提示" id="explain"><i class="icon iconfont icon-tishi1" style="margin-right:10px;"></i></button>
+                <input type="radio" name="printtype" value="0" checked="checked" style="margin:10px;">直接打印 
+            </div>
+            <!--搜索区域  -->
+            <div class="table_search">
+                <input type="text" id="_search" placeholder="请在这里输入关键字" style="height:25px;">
+                <button type="button" class="layui-btn layui-btn-primary layui-btn-small" onclick="search()"><i class="layui-icon">&#xe615;</i></button>
+                <button type="button" class="layui-btn layui-btn-primary layui-btn-small" id="high_search">高级搜索</button>
+                <!--高级搜索区域  -->
+                <div class="high_searchcontent">
+                    <div class="content_title"><span>高级搜索</span></div>
+                    <form id="search_form" class="layui-form" action="post">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">订单号:</label>
+                            <div class="layui-input-block">
+                                <input type="text" id="sn"  lay-verify="title" autocomplete="off" placeholder="请输入订单号" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">收货人:</label>
+                            <div class="layui-input-block">
+                                <input type="text" id="ship_name" lay-verify="title" autocomplete="off" placeholder="请输入收货人" class="layui-input">
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">订单状态</label>
+                            <div class="layui-input-block">
+                                <select id="status"  lay-filter="">
+                                    <option value="">---所有---</option> 
+									<#list statusList as status>
+										<option value="${status.key}">${status.value}</option> 
+									</#list>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">付款状态</label>
+                            <div class="layui-input-block">
+                                <select id="paystatus"  lay-filter="">
+                                    <option value="">---所有---</option> 
+									<#list payStatusList as status>
+										<option value="${status.key}">${status.value}</option> 
+									</#list>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">发货状态</label>
+                            <div class="layui-input-block">
+                                <select id="shipstatus"  lay-filter="">
+                                    <option value="">---所有---</option> 
+									<#list shipList as status>
+										<option value="${status.key}">${status.value}</option> 
+									</#list>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">配送方式</label>
+                            <div class="layui-input-block">
+                                <select id="shipping_type"  lay-filter="">
+                                    <option value="">---所有---</option>
+                                    <#list shipTypeList as slist>
+										<option value="${slist.type_id}">${slist.name}</option> 
+									</#list>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">支付方式</label>
+                            <div class="layui-input-block">
+                                <select id="payment_id"  lay-filter="">
+                                    <option value="">---所有---</option>
+                                    <#list payTypeList as plist>
+										<option value="${plist.id}">${plist.name}</option>
+									</#list>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="layui-form-item" style="width:100%;">
+   							 <label class="layui-form-label" >下单时间</label>
+    						<div class="layui-input-inline" >
+      							<input class="layui-input" placeholder="开始日" id="start_time">
+    						</div>
+    						<div class="layui-input-inline">
+      							<input class="layui-input" placeholder="截止日" id="end_time">
+    						</div>
+  						</div>
+  						
+                        <ul>
+                            <li class="reset">
+                                <button type="reset" id="reset_btn" class="layui-btn  layui-btn-primary">重置</button>
+                            </li>
+                            <li class="submit">
+                                <button type="button" id="submit_btn" class="layui-btn layui-btn-primary" onclick="highSearch()" lay-submit="" lay-filter="highsearch" >开始搜索</button>
+                            </li>
+                        </ul>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--高级搜索生成区域  -->
+    <div class="high_search">
+     	<form action="" class="layui-form layui-form-one" action="">
+   		</form> 	
+    </div>
+     <!-- //高级搜索区克隆区域 -->
+      <div class="kelong" style="display:none;">
+   		<ul  class="search_conditions " style="width:98%; ">
+ 			<li>
+ 				 <div class="layui-form-item _select">
+                       <label class="layui-form-label  _label" >订单号</label>
+                  <div class="layui-input-block _layui-input-block">
+                        <input type="text" id="sn_one" readonly="true" class="layui-input">
+                  </div>
+                  </div>
+                  <span>
+                  	<a class="closeSelf" href="javascript:void (0)">
+                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+                 	</a>
+                  </span>
+ 			</li>
+			<li>
+ 				 <div class="layui-form-item _select">
+                       <label class="layui-form-label  _label" >收货人</label>
+                  <div class="layui-input-block _layui-input-block">
+                        <input type="text" id="ship_name_one" readonly="true" class="layui-input">
+                  </div>
+                  </div>
+                  <span>
+                  	<a class="closeSelf" href="javascript:void (0)">
+                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+                 	</a>
+                  </span>
+ 			</li>
+ 			<li>
+ 			    <div class="layui-form-item  _select">
+                    <label class="layui-form-label _label">订单状态</label>
+                    <div class="layui-input-block _layui-input-block">
+                     	 <input type="text" id="status_one" readonly="true"  class="layui-input">
+                    </div>
+                 </div>
+              	 	<span>
+	                  	<a class="closeSelf" href="javascript:void (0)">
+	                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                 	</a>
+                  </span>
+ 			</li>
+			<li>
+ 			    <div class="layui-form-item  _select">
+                     <label class="layui-form-label _label">付款状态</label>
+                     <div class="layui-input-block _layui-input-block">
+                       	<input type="text" id="paystatus_one" readonly="true" class="layui-input">
+                     </div>
+               	 </div>
+              	 	<span>
+	                  	<a class="closeSelf" href="javascript:void (0)">
+	                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                 	</a>
+                  </span>
+ 			</li>
+ 			<li>
+ 			    <div class="layui-form-item  _select">
+                   <label class="layui-form-label _label">发货状态</label>
+                   <div class="layui-input-block _layui-input-block">
+                     	<input type="text" id="shipstatus_one" readonly="true"  class="layui-input">
+                   </div>
+                   </div>
+              	 	<span>
+	                  	<a class="closeSelf" href="javascript:void (0)">
+	                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                 	</a>
+                  </span>
+ 			</li>
+			<li>
+ 			    <div class="layui-form-item  _select">
+                   <label class="layui-form-label _label">配送方式</label>
+                   <div class="layui-input-block _layui-input-block">
+                     	<input type="text" id="shipping_type_one" readonly="true"  class="layui-input">
+                   </div>
+                   </div>
+              	 	<span>
+	                  	<a class="closeSelf" href="javascript:void (0)">
+	                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                 	</a>
+                  </span>
+ 			</li>
+ 			<li>
+ 			    <div class="layui-form-item  _select">
+                   <label class="layui-form-label _label">支付方式</label>
+                   <div class="layui-input-block _layui-input-block">
+                    	 <input type="text" id="payment_id_one" readonly="true"  class="layui-input">
+                   </div>
+                   </div>
+              	 	<span>
+	                  	<a class="closeSelf" href="javascript:void (0)">
+	                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                 	</a>
+                  </span>
+ 			</li>
+ 			<li>
+ 			    <div class="layui-form-item  ">
+                      <label class="layui-form-label _select">下单时间</label>
+                         <div class="layui-input-inline _inline" >
+                           <input type="text" id="start_time_one"  readonly="true" class="layui-input">
+                         </div>
+                          <div class="layui-input-inline _inline" >
+                         	 <input type="text" id="end_time_one"  readonly="true" class="layui-input">
+                         </div>
+                   </div>
+              	 	<span style="float:right;margin-top:-43px;">
+	                  	<a class="closeSelf" href="javascript:void (0)">
+	                  		<i class="layui-icon" style="color: #5f8bca;">&#x1006;</i>
+	                 	</a>
+                  </span>
+ 			</li>
+ 		</ul>
+   </div>
+    <!--表格区域  -->
+   <form id="orderform">
+     <table id="orderdata" class="layui-table site-table table-hover">
+        <thead>
+          <tr>
+            <th><input type='checkbox'  class='btn-checkall fly-checkbox' id='selected-all'></th>
+            <th>订单号</th>
+            <th>下单日期</th>
+            <th>订单总额</th>
+            <th>收货人</th>
+            <th>状态</th>
+            <th>配送方式</th>
+            <th>支付方式</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+
+     </table>
+     <!--传值等操作(暂定)  -->
+    <div id="addBrand" ></div>
+   </form>
+</div>
+
+<!--js区域  -->
+<script type="text/javascript">
+/* 监听开始搜索按钮 */
+var index = parent.layer.getFrameIndex(window.name);
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+    
+	form.on('submit(highsearch)', function(data){
+		 $(".layui-form-one>ul").remove();
+			$(".high_search").css("display","block");
+			var kelo=$(".kelong ul").clone();
+			kelo.appendTo($(".high_search form"));
+			/* 赋值 */
+			var gjsn=$("#sn").val();
+			$("#sn_one").val(gjsn);
+			var gjship=$("#ship_name").val();
+			$("#ship_name_one").val(gjship);
+	       var gjstatus=$("#status").find("option:selected").text();
+		       $("#status_one").val(gjstatus);
+		       var gjpay=$("#paystatus").find("option:selected").text();
+		       $("#paystatus_one").val(gjpay);
+		       var gjships=$("#shipstatus").find("option:selected").text();
+		       $("#shipstatus_one").val(gjships);
+		       var gjpay=$("#payment_id").find("option:selected").text();
+		       $("#payment_id_one").val(gjpay);
+		       var gjshipp=$("#shipping_type").find("option:selected").text();
+		       $("#shipping_type_one").val(gjshipp);
+		       var gjstart=$("#start_time").val();
+		       $("#start_time_one").val(gjstart);
+		       var gjend=$("#end_time").val();
+		       $("#end_time_one").val(gjend);
+			$(".closeSelf").click(function(){
+				$(this).parent().parent().detach();
+				})
+	});
+});
+
+var table;
+$(function(){
+	
+	//高级搜索框的显示隐藏
+    $("#high_search").on("click",function(event){
+    	event.stopPropagation();
+     	event.stopImmediatePropagation();
+        $(".high_searchcontent").toggle();
+    })
+	
+     table = $('#orderdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/order/list-json.do?order_state=wait_ship',
+	    },
+	    columns: [ //定义列
+            {"data": function (obj) {
+                return '<input type="checkbox" name="order_id" class="fly-checkbox" value=' + obj.order_id + '>';
+            		}},
+	        {data: "sn"},
+	        {data: function(c_time) {
+	        	if(c_time.create_time==null){
+	        		return " ";
+	        	}else{
+	        		return  getFormatDateByLong(c_time.create_time, "yyyy-MM-dd");
+	        	}
+	       	}},
+	        {data: "order_amount"},
+	        {data: "ship_name"},
+	        {data: null,"render": function(data,type,row){
+	        	var val;
+	        	val = getType(${status_Json!''},data.status);
+	        	return val;
+	        }},
+	        
+	        {data: "shipping_type"},
+	        {data: "payment_name"},
+	        {data: null,"render": function(data, type, row) {
+	        	return "<a class='layui-btn layui-btn-small _aa' name='change_btn' onclick=\"newTab('查看订单详细','${ctx}/shop/admin/order/detail.do?orderId="+data.order_id+"')\">操作</a>";		//获取值:data["brand_id"]
+	       	}}
+	     ]
+	});
+	
+	//layui日期控件配置
+	layui.use('laydate', function(){
+		  var laydate = layui.laydate;
+		  
+		  var start = {
+		    min: '2014-01-01 23:59:59',
+		    max: '2099-06-16 23:59:59',
+		    istoday: false,
+		    choose: function(datas){
+		      end.min = datas; //开始日选好后，重置结束日的最小日期
+		      end.start = datas //将结束日的初始值设定为开始日
+		    }
+		  };
+		  
+		  var end = {
+		    min: '2014-01-01 23:59:59',
+		    max: '2099-06-16 23:59:59',
+		    istoday: false,
+		    choose: function(datas){
+		      start.max = datas; //结束日选好后，重置开始日的最大日期
+		    }
+		  };
+		  
+		  document.getElementById('start_time').onclick = function(){
+		    start.elem = this;
+		    laydate(start);
+		  }
+		  document.getElementById('end_time').onclick = function(){
+		    end.elem = this
+		    laydate(end);
+		  }
+		  
+		});
+	
+	//填写发货信息
+	$("#listForExpressNo").click(function(){
+		var check = $("input[name='order_id']").is("input:checked");
+		var chk_value =[];
+		$('input[name="order_id"]:checked').each(function(){
+			chk_value.push($(this).val());
+		});	
+		if(check == false){
+			alert("请选择填写的快递单！！！");
+			return false;
+		}
+	   	 layer.open({
+	            title:"填写快递单号",//标题
+	            maxmin :true,//右上角可否放大缩小
+	            type:2,//弹框的类型
+	            shade: [0.3, '#000'],//黑色背景
+	            shadeClose:false,//黑色背景是否可以点击关闭
+	            content:"${ctx}/shop/admin/order/list-for-express-no.do?orderIds="+chk_value,//内容的URL  //这个地方暂时有点问题，回头问下 再改。
+	            area:['800px','300px'],//弹框大小
+	            btn: ['保存', '取消'],
+	            yes: function(index, layero){
+	            	var expressno = layero.find("iframe").contents().find(".addExpressNoForm");
+	            	var logi_id = layero.find("iframe").contents().find(".logi_id");
+	            	var logi_name="";
+	            	logi_id.find("option:selected").each(function(){
+	        			logi_name+=$(this).text()+",";
+	        		});
+	            	var options = {
+						url:ctx+"/shop/admin/order-print/save-ship-no.do?ajax=yes",
+						type:"post",
+						data:{"logi_name":logi_name},
+						dataType:"json",
+						success : function(result) {
+							if(result.result == 1){
+								 Loading.success("保存成功!");
+								 layer.close(index)
+							}else{
+								 Loading.error("保存失败!");
+							}
+					 	},
+					 	error : function(e) {
+					 		alert("出现错误，请重试");
+						}
+					};
+	            	expressno.ajaxSubmit(options);
+	    		 },
+	     		btn2: function(index, layero){
+	      
+	     		}
+	        });
+		});
+	
+	//发货
+	$("#shipBtn").click(function(){
+		var check = $("input[name='order_id']").is("input:checked");
+		if(check == false){
+			alert("请先选择发货订单！！！")
+			return false;
+		}
+		if(confirm("确认发货？")){
+			$("#orderform").ajaxSubmit({
+				url:"${ctx}/shop/admin/order-print/batch-ship.do",
+				dataType:"json",
+				cache:false,
+				success:function(json){
+					 if(json.result==1){
+						 $.Loading.success("发货成功");
+						 table.ajax.url(ctx+"/shop/admin/order/list-json.do?order_state=wait_ship").load();
+					 }else{
+						 $.Loading.error(json.message);
+					 }
+				},
+				error:function(){
+					alert("出现意外错误");
+				}
+			});
+		}
+	})
+	
+});
+
+ //普通搜索
+function search(){
+	var keyword = $("#_search").val();
+	table.ajax.url(ctx+"/shop/admin/order/list-json.do?order_state=wait_ship"+"&keyword="+keyword+"&stype="+0).load();
+}
+
+//高级搜索
+function highSearch(){
+	var start_time = $("#start_time").val();
+	var end_time = $('#end_time').val();
+	var sn = $("#sn").val();
+	var ship_name = $("#ship_name").val();
+	var status = $("#status").val();
+	var paystatus = $("#paystatus").val(); 
+	var shipstatus = $("#shipstatus").val();
+	var shipping_type = $("#shipping_type").val();
+	var payment_id = $("#payment_id").val();
+	var param = "&start_time="+start_time+"&end_time="+end_time+"&sn="+sn+"&ship_name="+ship_name+"&status="+status+"&paystatus="+paystatus+"&shipstatus="+shipstatus+"&shipping_type="+shipping_type+"&payment_id="+payment_id;
+	table.ajax.url(ctx+"/shop/admin/order/list-json.do?order_state=wait_ship"+param+"&stype="+1).load();
+} 
+//状态
+function getType(exMap,value){
+	var val;
+	$.each(exMap,function(key,values){ 
+	    if(value==values.key){
+	    	val=values.value;
+	    	return val;
+	    }
+	});
+	return val;
+}
+</script>
+<#include '/admin/footer.html' >

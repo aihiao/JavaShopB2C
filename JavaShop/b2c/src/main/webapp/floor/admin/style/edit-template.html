@@ -1,0 +1,33 @@
+<#include '/admin/header.html' />
+<link rel="stylesheet" href="${ctx}${themes_path}/css/swiper-3.4.2.min.css">
+<link rel="stylesheet" type="text/css" href="${ctx}${themes_path}/css/index.css">
+<script type="text/javascript" src="${ctx}/adminthemes/version3/plugins/layui/lay/modules/layer.js"></script>
+<script type="text/javascript" src="${ctx}${themes_path}/js/swiper-3.4.2.min.js"></script>
+<script type="text/javascript" src="${ctx}/statics/e_tools/js/jquery.goodsSelector.js"></script>
+
+<style>
+body {background-color: #ffffff;}
+</style>
+
+<div class="main">
+	<div class="clear height10"></div>
+	<div style="display: block;" class="input shadowBoxWhite wf100 whiteBox">
+		<div id="editTemplate" class="index-main edit-template"></div>
+	</div>
+	<div id="divdia" style="display: none;"></div>
+</div>
+<script type="text/javascript">
+	$(function(){
+		var path = "${stylepath}";
+		var floorId = "${floor_id}";
+		var pageid = "${pageid}";
+		$("#editTemplate").load("${ctx}"+path+"?floor_id="+floorId+"&page_id="+pageid+"&floors_index=0&is_admin=yes",function(){
+		    var ele = document.createElement('script');
+		    ele.type = 'text/javascript';
+		    ele.src = '${ctx}${themes_path}/floorstyle/new_style.js';
+            document.body.appendChild(ele);
+		});
+	});
+</script>
+
+<#include '/admin/footer.html' />

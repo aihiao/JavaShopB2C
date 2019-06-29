@@ -1,0 +1,153 @@
+<#include '/admin/header.html' >
+<style type="text/css">
+td select{
+	height: 25px;
+}
+tr td{
+	padding-right: 10px;
+}
+</style>
+<div class="admin-main">
+    <div class="table_control">
+		<div class="searchAdvanced">
+			<table width="98%" border="0" cellspacing="0" cellpadding="5">
+				<tr >
+					<td>
+					</td>
+					<td>
+					</td>
+					<td width="70" >
+						<select id="year">
+						</select>
+					</td>
+					<td width="70" >
+						<select id="month">
+						</select>
+					</td>
+					<td width="200" style="text-align: center;line-height: 47px;padding-left: 8px;">
+							<a id="search_data"  href="javascript:void(0);"	class="layui-btn layui-btn-normal layui-btn-small">开始搜索</a>
+					</td>
+					<!-- <td width="70%" >
+					</td> -->
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div class="clear height10"></div>
+	<div class="shadowBoxWhite whiteBox">
+		<table cellpadding="5" width="100%" lay-skin="line">
+			<tr>
+				<th class="title" colspan="4">销售收入总览</th>
+			</tr>
+			<tr>
+				<th width="50px;"></th>
+				<td style="text-align: left;">
+					<div class="deliveryexp price">
+						<span>收款金额:&nbsp;&nbsp;<span id="receivables" >${receivables!0}</span></span>
+						<span>退款金额:&nbsp;&nbsp;<span id="refund" >${refund!0}</span></span>
+						<span>实收金额:&nbsp;&nbsp;<span id="paid" >${paid!0}</span></span>
+					</div>
+				</td>
+				
+			</tr>
+		</table>
+	</div>
+	
+	<div class="clear height10"></div>
+	<div class="shadowBoxWhite tableDiv">
+		<table id="salesdata" class="layui-table site-table table-hover">
+        	<thead>
+        		<tr>
+            		<th>商品名称</th>
+            		<th>商品数量</th>
+            		<th>商品单价</th>
+            		<th>订单金额</th>
+        		</tr>
+        	</thead>
+   		</table>
+	</div>
+</div>
+
+<input type="hidden" id="this_type" value="1" >
+
+
+<script type="text/javascript">
+
+$(function() {
+	var currentYear = new Date().getFullYear();
+	var historyYear = currentYear-10;
+	
+	var currentmonth = new Date().getMonth();
+	currentmonth+=1;
+	for(var i=0;i<20;i++){
+		if(currentYear==historyYear){
+			$("#year").append("<option value='"+historyYear+"' selected='selected' >"+historyYear+"年</option>" );
+		}else{
+			$("#year").append("<option value='"+historyYear+"' >"+historyYear+"年</option>" );
+		}
+		historyYear++;
+	}
+	
+	for(var i=1;i<=12;i++){
+		if(currentmonth==i){
+			$("#month").append("<option value='"+i+"' selected='selected' >"+i+"月</option>" );
+		}else{
+			$("#month").append("<option value='"+i+"' >"+i+"月</option>" );
+		}
+	}
+	var table = $('#salesdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/salesStatis/sale-income-json.do',
+	    },
+	    columns: [ //定义列
+	        {data: "name"},
+	        {data: "t_num"},
+	        {data: "price"},
+	        {data: "t_price"}
+	     ]
+	});
+	$("#search_data").click(function(){
+		var year = $("#year :selected").val();
+		var month = $("#month :selected").val();
+		
+		var param = "year="+year+"&month="+month;
+		var url = table.ajax.url("${ctx}/shop/admin/salesStatis/sale-income-json.do?"+param);
+		url.load();
+	})
+		
+});
+
+
+function formatDate(value,row,index){
+	if(value==null||value==0){
+		return "";
+	}
+	else{
+		return getFormatDateByLong(value, "yyyy-MM-dd");
+	}
+}
+
+
+</script>
+<script>
+$(function(){
+	
+	
+});
+//下拉列表样式
+layui.use('form', function(){
+  var form = layui.form();
+});
+</script>
+
+<#include '/admin/footer.html' >

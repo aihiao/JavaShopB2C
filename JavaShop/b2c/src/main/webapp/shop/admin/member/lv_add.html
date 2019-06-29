@@ -1,0 +1,98 @@
+<#include '/admin/sonheader.html' >
+<style>
+  .layui-input{
+    width: 75%;
+  }
+</style>
+
+<div class="main" style="background-color: white;">
+	<form class="layui-form layui-form-pane" id="saveLvForm" action="" >
+		<div class="layui-form-item">
+			<label class="layui-form-label">等级名称</label>
+			<div class="layui-input-block">
+				<input type="text" name="name"   lay-verify="name"  placeholder="请输入等级名称" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">所需积分</label>
+			<div class="layui-input-block">
+				<input type="text"  name="point"  lay-verify="point"  placeholder="请输入积分" autocomplete="off" onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">优惠百分比</label>
+			<div class="layui-input-block">
+				<input type="text" name="discount"   lay-verify="discount"  placeholder="请输入百分比" autocomplete="off" onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item" pane="" style="width:79%;">
+			<label class="layui-form-label">默认等级</label>
+			<div  class="layui-input-block ">
+				<input type="radio" name="default_lv" value="0" title="否" checked="checked">
+				<input type="radio" name="default_lv" value="1" title="是">
+			</div>
+		</div>
+
+		<div class="layui-layer-btn layui-layer-btn-" style="padding:8px 12px;position: fixed;left: 1px;width: 96%;height: 50px; background:rgba(230,230,230,0.8)"> 
+  			<a class="layui-layer-btn0" type="submit" lay-submit="" lay-filter="saveLv">保存</a>
+  			<a class="layui-layer-btn1">取消</a>
+  		</div>
+	</form>
+</div>
+<script type="text/javascript">	
+var index = parent.layer.getFrameIndex(window.name);
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+    
+    $(".layui-layer-btn1").click(function(){
+    	parent.layer.close(index);
+    });
+    
+    form.verify({
+    	name:function(value){
+    		if($.trim(value) == ""){
+    			return "请输入等级名称";
+    		}
+    	},
+    	point:function(value){
+    		if($.trim(value) == ""){
+    			return "请输入积分";
+    		}
+    	},
+    	discount:function(value){
+    		if($.trim(value) == ""){
+    			return "请输入百分比";
+    		}
+    	}
+    	
+    });
+     
+    form.on('submit(saveLv)', function(data){
+    	var options = {
+   			url:ctx+"/shop/admin/member/save-add-lv.do",
+   			type:"post",
+   			async: false,  
+   			dataType:"json",
+   			async: false,
+   			beforeSend:function(){  
+   			  $('.save').attr("disabled", true);		       	
+   			}, 
+   			success:function(data){
+   				if(data.result==1){	
+   					$.Loading.success(data.message);
+   					parent.layer.close(index); //再执行关闭        
+   					parent.table.ajax.url(ctx+"/shop/admin/member/list-lv-json.do").load();
+   				} else {
+   					$.Loading.error(data.message);
+   				}
+   			}
+   		};
+   		$("#saveLvForm").ajaxSubmit(options);
+       return false;
+    });
+});
+</script>

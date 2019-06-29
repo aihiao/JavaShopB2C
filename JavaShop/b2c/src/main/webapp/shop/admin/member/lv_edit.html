@@ -1,0 +1,85 @@
+<#include '/admin/sonheader.html' >
+<style>
+	.layui-input{
+		width: 75%;
+	}
+</style>
+<div class="main" style="background-color: white;">
+	<form class="layui-form  layui-form-pane" action="" id="editLvForm">
+		<div class="layui-form-item">
+			<label class="layui-form-label">等级名称</label>
+			<div class="layui-input-block">
+				<input type="text" name="name" required  lay-verify="required" placeholder="请输入标题" value="${lv.name}" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">所需积分</label>
+			<div class="layui-input-block">
+				<input type="text"  name="point" required  lay-verify="number" placeholder="请输入标题" value="${lv.point}" autocomplete="off" class="layui-input">
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">优惠百分比</label>
+			<div class="layui-input-block">
+				<input type="text" name="discount" required  lay-verify="number" placeholder="请输入标题" value="${lv.discount}" autocomplete="off" class="layui-input">
+			</div>
+		</div
+		<div class="layui-form-item" pane="" style="width:79%;">
+			<label class="layui-form-label">默认等级</label>
+			<div class="layui-input-block " style="border: 1px solid rgba(204, 204, 204, 0.5);
+    width: 61%;">
+				<input  type="radio" name="default_lv" value="0" title="否" <#if lv.default_lv==0>checked</#if>>
+				<input type="radio" name="default_lv" value="1" title="是" <#if lv.default_lv==1>checked</#if>>
+				<input type="hidden" value="${lv.default_lv}" id="default_lv">
+			</div>
+		</div>
+
+		<div class="layui-layer-btn layui-layer-btn-" style="padding:8px 12px;position: fixed;left: 1px;width: 96%;height: 50px; background:rgba(230,230,230,0.8)"> 
+  			<a class="layui-layer-btn0" type="submit" lay-submit="" lay-filter="editLv">保存</a>
+  			<a class="layui-layer-btn1">取消</a>
+  		</div>
+  		<input type="hidden" name="lv_id" value="${lv.lv_id}">
+	</form>
+</div>
+
+<script>
+var index = parent.layer.getFrameIndex(window.name);
+
+layui.use(['form', 'layedit', 'laydate'], function(){
+    var form = layui.form()
+        ,layer = layui.layer
+        ,layedit = layui.layedit
+        ,laydate = layui.laydate;
+    
+    $(".layui-layer-btn1").click(function(){
+    	parent.layer.close(index);
+    });
+    
+    //监听提交
+    form.on('submit(editLv)', function(data){
+    	var be_lv=$("#default_lv").val();
+    	var af_lv=$("input[name='default_lv']:checked").val();
+    	if(be_lv == 1 && af_lv == 0){
+    		alert("已是默认等级，无法修改等级!");
+    		return;
+    	}
+    	
+    	var options = {
+   			url:ctx+"/shop/admin/member/save-edit-lv.do",
+   			type:"post",
+   			dataType:"json",
+   			success:function(data){
+   				if(data.result==1){	
+   					parent.$.Loading.success(data.message);
+   					parent.layer.close(index); //再执行关闭        
+   					parent.table.ajax.url(ctx+"/shop/admin/member/list-lv-json.do").load();
+   				} else {
+   					parent.$.Loading.error(data.message);
+   				}
+   			}
+   		};
+   		$("#editLvForm").ajaxSubmit(options);
+       return false;
+    });
+});
+</script>

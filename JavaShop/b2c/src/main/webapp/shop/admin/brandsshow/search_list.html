@@ -1,0 +1,108 @@
+<#include '/admin/header.html' >
+<#assign dateFormat="com.enation.framework.directive.DateformateDirective"?new()>
+<style>
+.searchAdvancedS{
+background-color: #FDEA7A;
+}
+
+</style>
+<div id="loading"></div>
+<div class="admin-main">
+     <div>
+        <!--按钮操作  -->
+        <div class="table_control">
+            <div class="table_opera">
+                <button type="button" title="保存选中" class="layui-btn layui-btn-primary layui-btn-small" onclick="controlBrands()"><i class="layui-icon">&#xe618;</i></button>
+            </div>
+        </div>
+        
+         <div class="table_search">
+                <input type="text" id="_search" class="keyword" placeholder="请输入模糊关键字" style="height:25px;">
+                <button type="button" class="layui-btn layui-btn-primary layui-btn-small" id="_searchBrand"><i class="layui-icon">&#xe615;</i></button>
+            </div>  
+    </div>
+    <!--表格区域  -->
+	<form id="gridform" method="post">
+	<input type="hidden" name="tag_id" value="${tag_id!''}"/> 
+      <table id="tagdata" class="layui-table site-table table-hover">
+        <thead>
+       	  <tr>
+        	<th><input type='checkbox'  class='btn-checkall fly-checkbox' id='selected-all'></th>
+            <th>品牌名称</th>
+            <th>品牌网址</th>
+          </tr>
+        </thead>
+      </table>
+	</form>
+	<!--传值等操作(暂定)  -->
+    <div id="addBrand" ></div>
+  </div>
+<script type="text/javascript">  
+var table;
+$(function(){
+	table = $('#tagdata').DataTable({
+		"language": {
+	        "url": "${staticserver}/media/zh_CN.txt"
+	    },
+	    "processing": true,
+	    "serverSide": true,
+	    "ordering": false,
+	    "searching": false,
+	    "lengthChange": false,
+	    ajax: {
+	        //指定数据源
+	        type:"post",
+	        url: '${ctx}/shop/admin/brand/list-json.do',
+	    },
+	    columns: [ //定义列
+	         {"data": function (obj) {
+	                   return '<input type="checkbox" name="brand_id" class="fly-checkbox" value=' + obj.brand_id + '>';
+	               }},
+	        {data: "name"},
+	        {data:"url"}
+	     ]
+	});
+	
+	//普通搜索
+	$("#_searchBrand").click(function(){
+		searchBrand(table);
+	});
+});
+	//搜索
+	function searchBrand(table){
+		var keyword = $("#_search").val();
+		var param = "keyword="+keyword+"&stype="+0;
+		var url = table.ajax.url("${ctx}/shop/admin/brand/list-json.do?"+param);
+		url.load();
+	}
+
+//保存添加
+function controlBrands(){
+	var check = $("input[name='brand_id']").is("input:checked");
+	if(check == false){
+		alert("请选择要添加的品牌！！！");
+		return false;
+	}
+	var options = {
+			url : "${ctx}/shop/admin/brands-show/add.do?ajax=yes",
+			type : "POST",
+			dataType : 'json',
+			success : function(result) {
+				if(result.result==1){
+					$.Loading.success(result.message);
+					table.ajax.url(ctx+"/shop/admin/brand/list-json.do").load();
+				}
+				if(result.result==0){
+					$.Loading.error(result.message);
+				}
+			},
+			error : function(e) {
+				$.Loading.error("出现错误 ，请重试");
+			}
+		};
+		$('#gridform').ajaxSubmit(options);	
+}
+</script>
+<#include '/admin/footer.html' >
+
+
