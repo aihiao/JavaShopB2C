@@ -71,7 +71,7 @@
         <imgscalr.version>4.2</imgscalr.version>
         <shiro.version>1.2.4</shiro.version>
         <fileupload.version>1.3.1</fileupload.version>
-        <quartz.version>2.2.3</quartz.version>
+        <quartz.version>2.3.2</quartz.version>
 
 
         <zxing.version>3.2.0</zxing.version>
