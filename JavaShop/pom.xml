@@ -56,7 +56,7 @@
 
 
         <ehcache.version>2.10.1</ehcache.version>
-        <jsoup.version>1.6.3</jsoup.version>
+        <jsoup.version>1.14.2</jsoup.version>
         <mysql-connector.version>5.1.38</mysql-connector.version>
         <jackson.version>2.6.5</jackson.version>
         <xbean.version>4.5</xbean.version>
