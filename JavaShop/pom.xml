@@ -69,7 +69,7 @@
         <xmemcached.version>2.0.0</xmemcached.version>
         <zookeeper.version>3.4.6</zookeeper.version>
         <imgscalr.version>4.2</imgscalr.version>
-        <shiro.version>1.2.4</shiro.version>
+        <shiro.version>1.7.1</shiro.version>
         <fileupload.version>1.3.1</fileupload.version>
         <quartz.version>2.2.3</quartz.version>
 
